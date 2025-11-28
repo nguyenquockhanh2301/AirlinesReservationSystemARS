@@ -1,0 +1,254 @@
+@{
+    ViewData["Title"] = "Class Pricing Guide";
+}
+
+<div class="container py-4">
+    <h1 class="mb-3">@ViewData["Title"]</h1>
+    <p class="lead text-muted mb-4">
+        Understanding our fare classes and pricing structure to help you choose the best option for your travel needs.
+    </p>
+
+    <!-- Class Comparison Overview -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="card h-100 border-primary">
+                <div class="card-header bg-primary text-white text-center">
+                    <h2 class="h4 mb-0">Economy Class</h2>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        <div class="display-6 text-primary">1.0x</div>
+                        <small class="text-muted">Base Fare</small>
+                    </div>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Standard seating</li>
+                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Carry-on baggage included</li>
+                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Standard check-in</li>
+                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>In-flight refreshments</li>
+                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Seat selection available</li>
+                    </ul>
+                    <p class="small text-muted mt-3">
+                        Perfect for budget-conscious travelers seeking reliable, comfortable air travel.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 border-info">
+                <div class="card-header bg-info text-white text-center">
+                    <h2 class="h4 mb-0">Business Class</h2>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        <div class="display-6 text-info">2.0x</div>
+                        <small class="text-muted">Base Fare</small>
+                    </div>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Extra legroom seating</li>
+                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Priority boarding</li>
+                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>2 checked bags included</li>
+                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Premium meals & beverages</li>
+                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Airport lounge access</li>
+                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Priority customer support</li>
+                    </ul>
+                    <p class="small text-muted mt-3">
+                        Enhanced comfort and convenience for business travelers and premium passengers.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 border-warning">
+                <div class="card-header bg-warning text-dark text-center">
+                    <h2 class="h4 mb-0">First Class</h2>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        <div class="display-6 text-warning">3.5x</div>
+                        <small class="text-muted">Base Fare</small>
+                    </div>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Luxury reclining seats</li>
+                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>First priority boarding</li>
+                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>3 checked bags included</li>
+                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Gourmet dining experience</li>
+                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Premium lounge access</li>
+                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Dedicated concierge service</li>
+                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Complimentary upgrades when available</li>
+                    </ul>
+                    <p class="small text-muted mt-3">
+                        The ultimate in luxury air travel with exceptional service and amenities.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pricing Factors -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h2 class="h4 card-title mb-3">
+                <i class="bi bi-calculator text-primary me-2"></i>
+                How Pricing Works
+            </h2>
+            <p class="mb-3">
+                Our ticket prices are calculated using a dynamic pricing model based on several factors:
+            </p>
+            
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <h3 class="h6"><i class="bi bi-geo-alt-fill text-primary me-2"></i>Distance & Route</h3>
+                    <p class="small text-muted mb-3">
+                        Base fare is determined by flight distance and route popularity. 
+                        Longer flights and high-demand routes have higher base fares.
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <h3 class="h6"><i class="bi bi-calendar-event-fill text-primary me-2"></i>Booking Timing</h3>
+                    <p class="small text-muted mb-3">
+                        Early bird discount: Book 30+ days in advance for 15% off. 
+                        Last-minute bookings (within 7 days) may have limited availability.
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <h3 class="h6"><i class="bi bi-people-fill text-primary me-2"></i>Passenger Count</h3>
+                    <p class="small text-muted mb-3">
+                        Price per adult passenger. Children and infants may have discounted rates.
+                        Group bookings (5+ passengers) may qualify for special rates.
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <h3 class="h6"><i class="bi bi-arrow-left-right text-primary me-2"></i>Trip Type</h3>
+                    <p class="small text-muted mb-3">
+                        Round-trip bookings typically offer better value than two one-way tickets.
+                        Multi-leg journeys are priced based on the total distance and connections.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Price Example Table -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h2 class="h4 card-title mb-3">
+                <i class="bi bi-table text-primary me-2"></i>
+                Sample Pricing (Base Fare: $200)
+            </h2>
+            <p class="small text-muted mb-3">
+                This example shows how class multipliers affect the final ticket price:
+            </p>
+            
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Class</th>
+                            <th>Multiplier</th>
+                            <th>Base Fare</th>
+                            <th>Early Bird (30+ days)</th>
+                            <th>Standard (7-29 days)</th>
+                            <th>Last Minute (&lt;7 days)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Economy</strong></td>
+                            <td>1.0x</td>
+                            <td>$200</td>
+                            <td class="text-success"><strong>$170</strong> (-15%)</td>
+                            <td>$200</td>
+                            <td>$200</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Business</strong></td>
+                            <td>2.0x</td>
+                            <td>$400</td>
+                            <td class="text-success"><strong>$340</strong> (-15%)</td>
+                            <td>$400</td>
+                            <td>$400</td>
+                        </tr>
+                        <tr>
+                            <td><strong>First Class</strong></td>
+                            <td>3.5x</td>
+                            <td>$700</td>
+                            <td class="text-success"><strong>$595</strong> (-15%)</td>
+                            <td>$700</td>
+                            <td>$700</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <p class="small text-muted mb-0">
+                <i class="bi bi-info-circle me-1"></i>
+                Actual prices vary based on route, demand, and other factors. Check the flight search for current fares.
+            </p>
+        </div>
+    </div>
+
+    <!-- Additional Fees -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h2 class="h4 card-title mb-3">
+                <i class="bi bi-cash-stack text-primary me-2"></i>
+                Additional Fees & Charges
+            </h2>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <h3 class="h6">Seat Selection</h3>
+                    <ul class="small">
+                        <li>Standard seats: Free</li>
+                        <li>Premium seats (extra legroom): $25-50 per segment</li>
+                        <li>Exit row seats: $35-60 per segment</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h3 class="h6">Baggage</h3>
+                    <ul class="small">
+                        <li>Carry-on: Included in all classes</li>
+                        <li>First checked bag: $30 (Economy), Free (Business/First)</li>
+                        <li>Additional bags: $50-75 each</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h3 class="h6">Change & Cancellation Fees</h3>
+                    <ul class="small">
+                        <li>Reschedule: Based on fare difference + $50 fee</li>
+                        <li>Cancellation: See refund policy (0-100% based on timing)</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h3 class="h6">Special Services</h3>
+                    <ul class="small">
+                        <li>Pet in cabin: $125 per pet</li>
+                        <li>Unaccompanied minor: $150 per trip</li>
+                        <li>Special meal requests: Free</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Call to Action -->
+    <div class="card bg-primary text-white">
+        <div class="card-body text-center py-4">
+            <h2 class="h4 mb-3">Ready to Book Your Flight?</h2>
+            <p class="mb-3">
+                Search for available flights and see real-time pricing for your desired route and travel dates.
+            </p>
+            <a asp-controller="Flight" asp-action="Index" class="btn btn-light btn-lg">
+                <i class="bi bi-search me-2"></i>Search Flights Now
+            </a>
+        </div>
+    </div>
+
+    <!-- Demo Notice -->
+    <div class="alert alert-info mt-4 mb-0">
+        <i class="bi bi-info-circle me-2"></i>
+        <strong>Note:</strong> This is a demonstration application. All prices, routes, and schedules shown are for educational purposes only.
+    </div>
+</div>

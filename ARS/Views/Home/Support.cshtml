@@ -1,0 +1,197 @@
+@{
+    ViewData["Title"] = "Support";
+}
+
+<div class="container py-4">
+    <h1 class="mb-3">@ViewData["Title"]</h1>
+    <p class="lead text-muted mb-4">
+        We're here to help! Get assistance with your reservations, bookings, and account.
+    </p>
+
+    <div class="row g-4">
+        <!-- Contact Information -->
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h2 class="h5 card-title">
+                        <i class="bi bi-envelope-fill text-primary me-2"></i>
+                        Contact Us
+                    </h2>
+                    <p class="card-text mb-3">
+                        For general inquiries, booking assistance, or technical support, reach out to our team.
+                    </p>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <strong>Email:</strong> 
+                            <a href="mailto:support@example.com">support@example.com</a>
+                        </li>
+                        <li class="mb-2">
+                            <strong>Phone:</strong> 
+                            <a href="tel:+1-800-555-0123">+1 (800) 555-0123</a>
+                        </li>
+                        <li class="mb-2">
+                            <strong>Hours:</strong> 
+                            Monday - Friday, 9:00 AM - 6:00 PM (EST)
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- FAQ -->
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h2 class="h5 card-title">
+                        <i class="bi bi-question-circle-fill text-primary me-2"></i>
+                        Frequently Asked Questions
+                    </h2>
+                    <div class="accordion accordion-flush" id="faqAccordion">
+                        <div class="accordion-item">
+                            <h3 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                    How do I cancel my reservation?
+                                </button>
+                            </h3>
+                            <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Go to your reservation details page and click the "Cancel Reservation" button. 
+                                    Refund amounts depend on how far in advance you cancel (see our refund policy).
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h3 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                    Can I change my flight dates?
+                                </button>
+                            </h3>
+                            <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Yes! Visit your reservation details and select "Reschedule Flight". 
+                                    Additional fees may apply based on fare differences.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h3 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                                    How do I select my seat?
+                                </button>
+                            </h3>
+                            <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    During the booking process, you'll see an interactive seat map where you can 
+                                    choose your preferred seat(s). Available seats are shown in green.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h3 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
+                                    What payment methods are accepted?
+                                </button>
+                            </h3>
+                            <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    We accept major credit cards (Visa, MasterCard, American Express, Discover) 
+                                    and debit cards. This is a demo system, so no real payments are processed.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Self-Service Options -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="h5 card-title mb-4">
+                        <i class="bi bi-tools text-primary me-2"></i>
+                        Self-Service Options
+                    </h2>
+                    <div class="row g-3">
+                        <div class="col-md-3 col-sm-6">
+                            <a asp-controller="Home" asp-action="Pricing" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-tags d-block fs-3 mb-2"></i>
+                                Class Pricing Guide
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <a asp-controller="Flight" asp-action="Index" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-search d-block fs-3 mb-2"></i>
+                                Search Flights
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <a asp-controller="Reservation" asp-action="MyReservations" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-ticket-detailed d-block fs-3 mb-2"></i>
+                                My Reservations
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <a asp-controller="Home" asp-action="Privacy" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-shield-check d-block fs-3 mb-2"></i>
+                                Privacy Policy
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Refund Policy -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="h5 card-title">
+                        <i class="bi bi-cash-stack text-primary me-2"></i>
+                        Refund Policy
+                    </h2>
+                    <p class="card-text mb-3">
+                        Refund amounts are calculated based on when you cancel your reservation:
+                    </p>
+                    <table class="table table-sm table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Cancellation Time</th>
+                                <th>Refund Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>30+ days before departure</td>
+                                <td><strong>100%</strong> full refund</td>
+                            </tr>
+                            <tr>
+                                <td>15-29 days before departure</td>
+                                <td><strong>80%</strong> refund</td>
+                            </tr>
+                            <tr>
+                                <td>7-14 days before departure</td>
+                                <td><strong>50%</strong> refund</td>
+                            </tr>
+                            <tr>
+                                <td>Less than 7 days before departure</td>
+                                <td><strong>No refund</strong></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Demo Notice -->
+    <div class="alert alert-info mt-4">
+        <i class="bi bi-info-circle me-2"></i>
+        <strong>Note:</strong> This is a demonstration application. All contact information, flight schedules, 
+        and prices shown are for educational purposes only.
+    </div>
+</div>
