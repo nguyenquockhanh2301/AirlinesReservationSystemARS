@@ -1,0 +1,37 @@
+@model ARS.Models.Schedule
+@{
+    ViewData["Title"] = "Add Schedule";
+    var flight = ViewData["Flight"] as ARS.Models.Flight;
+}
+
+<div class="container mt-4">
+    <h3>Add Schedule @if (flight != null) { <span class="text-muted">for @flight.FlightNumber</span> }</h3>
+
+    <form asp-action="Create" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="FlightID" />
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Date</label>
+                <input asp-for="Date" type="date" class="form-control" value="@Model.Date.ToString("yyyy-MM-dd")" />
+                <span asp-validation-for="Date" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">City (optional)</label>
+                <select asp-for="CityID" asp-items="@(ViewData["OriginCityID"] as SelectList)" class="form-select">
+                    <option value="">(None)</option>
+                </select>
+            </div>
+
+            <div class="col-12 mt-3">
+                <button type="submit" class="btn btn-primary">Create Schedule</button>
+                <a asp-controller="Flight" asp-action="Index" class="btn btn-secondary ms-2">Back to Flights</a>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

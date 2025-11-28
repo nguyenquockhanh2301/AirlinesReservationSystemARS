@@ -1,0 +1,230 @@
+@model ARS.ViewModels.FlightSearchViewModel
+@{
+    ViewData["Title"] = "Search Flights";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="mb-0"><i class="bi bi-airplane"></i> Search Flights</h2>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Search" method="post">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Trip Type</label>
+                            <div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="TripType" id="tripOneWay" value="OneWay" checked />
+                                    <label class="form-check-label" for="tripOneWay">One-way</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="TripType" id="tripRound" value="RoundTrip" />
+                                    <label class="form-check-label" for="tripRound">Round-trip</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="TripType" id="tripMulti" value="MultiCity" />
+                                    <label class="form-check-label" for="tripMulti">Multi-city</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="multiCityContainer" style="display:none;" class="mt-3">
+                            <label class="form-label fw-bold">Multi-city itinerary</label>
+                            <div id="legsList"></div>
+                            <div class="mt-2">
+                                <button type="button" class="btn btn-outline-primary" id="btnAddLeg">Add destination</button>
+                            </div>
+                        </div>
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                        
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label asp-for="OriginCityID" class="form-label fw-bold"></label>
+                                <select asp-for="OriginCityID" class="form-select" asp-items="ViewBag.Cities">
+                                    <option value="">Select Origin City</option>
+                                </select>
+                                <span asp-validation-for="OriginCityID" class="text-danger"></span>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label asp-for="DestinationCityID" class="form-label fw-bold"></label>
+                                <select asp-for="DestinationCityID" class="form-select" asp-items="ViewBag.Cities">
+                                    <option value="">Select Destination City</option>
+                                </select>
+                                <span asp-validation-for="DestinationCityID" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mt-2">
+                            <div class="col-md-4">
+                                <label asp-for="TravelDate" class="form-label fw-bold"></label>
+                                <input asp-for="TravelDate" class="form-control" type="date" />
+                                <span asp-validation-for="TravelDate" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-4" id="returnDateGroup" style="display:none;">
+                                <label asp-for="ReturnDate" class="form-label fw-bold"></label>
+                                <input asp-for="ReturnDate" class="form-control" type="date" />
+                                <span asp-validation-for="ReturnDate" class="text-danger"></span>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <label asp-for="Passengers" class="form-label fw-bold"></label>
+                                <input asp-for="Passengers" class="form-control" type="number" min="1" max="10" />
+                                <span asp-validation-for="Passengers" class="text-danger"></span>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <label asp-for="Class" class="form-label fw-bold"></label>
+                                <select asp-for="Class" class="form-select">
+                                    <option value="Economy">Economy</option>
+                                    <option value="Business">Business</option>
+                                    <option value="First">First Class</option>
+                                </select>
+                                <span asp-validation-for="Class" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg w-100">
+                                <i class="bi bi-search"></i> Search Flights
+                            </button>
+                        </div>
+                        <div class="mt-2 text-center">
+                            <a asp-action="All" class="btn btn-outline-secondary mt-2">
+                                <i class="bi bi-list"></i> View All Flights
+                            </a>
+                        </div>
+                    </form>
+
+                    <script>
+                        (function () {
+                            function $(sel) { return document.querySelector(sel); }
+                            function $all(sel) { return Array.from(document.querySelectorAll(sel)); }
+
+                            var tripRadios = $all('input[name="TripType"]');
+                            var returnGroup = document.getElementById('returnDateGroup');
+                            var multiCityContainer = document.getElementById('multiCityContainer');
+                            var legsList = document.getElementById('legsList');
+                            var btnAddLeg = document.getElementById('btnAddLeg');
+
+                            function getSelectedTripType() {
+                                var r = tripRadios.find(function (el) { return el.checked; });
+                                return r ? r.value : 'OneWay';
+                            }
+
+                            function toggleUI() {
+                                var type = getSelectedTripType();
+                                if (type === 'RoundTrip') {
+                                    returnGroup.style.display = '';
+                                } else {
+                                    returnGroup.style.display = 'none';
+                                }
+
+                                if (type === 'MultiCity') {
+                                    multiCityContainer.style.display = '';
+                                    var travelRow = document.querySelector('input[name="TravelDate"]')?.closest('.row');
+                                    if (travelRow) travelRow.style.display = 'none';
+                                } else {
+                                    multiCityContainer.style.display = 'none';
+                                    var travelRow = document.querySelector('input[name="TravelDate"]')?.closest('.row');
+                                    if (travelRow) travelRow.style.display = '';
+                                }
+                            }
+
+                            tripRadios.forEach(function (r) { r.addEventListener('change', toggleUI); });
+                            toggleUI();
+
+                            // Multi-city legs dynamic UI
+                            var legTemplate = function (index, originId, destId, dateVal) {
+                                return '\n<div class="card mb-2" data-leg-index="' + index + '">\n  <div class="card-body">\n    <div class="row g-3 align-items-end">\n      <div class="col-md-4">\n        <label class="form-label">Origin</label>\n        <select name="Legs[' + index + '].OriginCityID" class="form-select">' + originOptionsHtml() + '</select>\n      </div>\n      <div class="col-md-4">\n        <label class="form-label">Destination</label>\n        <select name="Legs[' + index + '].DestinationCityID" class="form-select">' + originOptionsHtml() + '</select>\n      </div>\n      <div class="col-md-3">\n        <label class="form-label">Date</label>\n        <input name="Legs[' + index + '].TravelDate" type="date" class="form-control" value="' + (dateVal||'') + '" />\n      </div>\n      <div class="col-md-1 text-end">\n        <button type="button" class="btn btn-link text-danger btnRemoveLeg" title="Remove leg">&times;</button>\n      </div>\n    </div>\n  </div>\n</div>\n';
+                            };
+
+                            function originOptionsHtml() {
+                                var opts = [];
+                                var select = document.getElementById('fromCitySelect') || document.querySelector('select[name="OriginCityID"]') || document.querySelector('select');
+                                if (!select) return '';
+                                Array.from(select.options).forEach(function (o) {
+                                    opts.push('<option value="' + o.value + '">' + o.text + '</option>');
+                                });
+                                return opts.join('');
+                            }
+
+                            function reindexLegs() {
+                                var cards = legsList.querySelectorAll('[data-leg-index]');
+                                Array.from(cards).forEach(function (card, idx) {
+                                    card.setAttribute('data-leg-index', idx);
+                                    var inputs = card.querySelectorAll('select, input');
+                                    inputs.forEach(function (inp) {
+                                        var name = inp.getAttribute('name');
+                                        if (!name) return;
+                                        var newName = name.replace(/Legs\[\d+\]/, 'Legs[' + idx + ']');
+                                        inp.setAttribute('name', newName);
+                                    });
+                                });
+                            }
+
+                            function addLeg(origin, destination, dateVal) {
+                                var idx = legsList.querySelectorAll('[data-leg-index]').length;
+                                var wrapper = document.createElement('div');
+                                wrapper.innerHTML = legTemplate(idx, origin, destination, dateVal);
+                                legsList.appendChild(wrapper.firstElementChild);
+                                reindexLegs();
+                                attachRemoveHandlers();
+                            }
+
+                            function attachRemoveHandlers() {
+                                var removes = legsList.querySelectorAll('.btnRemoveLeg');
+                                removes.forEach(function (btn) {
+                                    if (btn._attached) return;
+                                    btn._attached = true;
+                                    btn.addEventListener('click', function (e) {
+                                        var card = btn.closest('[data-leg-index]');
+                                        if (card) { card.remove(); reindexLegs(); }
+                                    });
+                                });
+                            }
+
+                            btnAddLeg && btnAddLeg.addEventListener('click', function () {
+                                addLeg();
+                            });
+
+                            function ensureDefaultLegs() {
+                                if (legsList.querySelectorAll('[data-leg-index]').length === 0) {
+                                    addLeg();
+                                    addLeg();
+                                }
+                            }
+
+                            tripRadios.forEach(function (r) {
+                                r.addEventListener('change', function () {
+                                    if (getSelectedTripType() === 'MultiCity') ensureDefaultLegs();
+                                });
+                            });
+
+                            var searchForm = document.getElementById('flightSearchForm');
+                            if (searchForm) {
+                                searchForm.addEventListener('submit', function (e) {
+                                    if (getSelectedTripType() === 'MultiCity') {
+                                        var legs = legsList.querySelectorAll('[data-leg-index]');
+                                        if (legs.length < 2) {
+                                            e.preventDefault();
+                                            alert('Please add at least two legs for a multi-city itinerary.');
+                                            return false;
+                                        }
+                                    }
+                                    if (getSelectedTripType() === 'RoundTrip') {
+                                        var travel = document.querySelector('input[name="TravelDate"]').value;
+                                        var ret = document.querySelector('input[name="ReturnDate"]').value;
+                                        if (ret && travel && ret <= travel) {
+                                            e.preventDefault();
+                                            alert('Return date must be later than outbound date.');
+                                            return false;
+                                        }
+                                    }
+                                });
+                            }
+
+                        })();
+                    </script>

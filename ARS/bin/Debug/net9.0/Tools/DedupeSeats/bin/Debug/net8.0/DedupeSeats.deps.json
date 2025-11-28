@@ -1,0 +1,41 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v8.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v8.0": {
+      "DedupeSeats/1.0.0": {
+        "dependencies": {
+          "MySqlConnector": "2.2.4"
+        },
+        "runtime": {
+          "DedupeSeats.dll": {}
+        }
+      },
+      "MySqlConnector/2.2.4": {
+        "runtime": {
+          "lib/net7.0/MySqlConnector.dll": {
+            "assemblyVersion": "2.0.0.0",
+            "fileVersion": "2.2.4.0"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "DedupeSeats/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "MySqlConnector/2.2.4": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-olEMmEMMb9D26TNRtqKTXs0GeqWSOKafzoGSAbuj5ic2e/0mJT5oO4ckqGcwwVHbHYWHjyGmzaQgCkIC4rh3hQ==",
+      "path": "mysqlconnector/2.2.4",
+      "hashPath": "mysqlconnector.2.2.4.nupkg.sha512"
+    }
+  }
+}

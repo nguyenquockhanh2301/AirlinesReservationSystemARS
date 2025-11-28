@@ -1,0 +1,191 @@
+@model ARS.ViewModels.UserBookingsViewModel
+@{
+    ViewData["Title"] = "User Bookings";
+    var user = Model.User;
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0"><i class="bi bi-person-circle"></i> User Account Information</h4>
+                        <a asp-action="UserManagement" class="btn btn-light btn-sm">
+                            <i class="bi bi-arrow-left"></i> Back to Search
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    @if (user != null)
+                    {
+                        <div class="row">
+                            <div class="col-md-4">
+                                <p class="mb-1 text-muted">Full Name</p>
+                                <h5>@user.FirstName @user.LastName</h5>
+                            </div>
+                            <div class="col-md-4">
+                                <p class="mb-1 text-muted">Email</p>
+                                <h5>@user.Email</h5>
+                            </div>
+                            <div class="col-md-4">
+                                <p class="mb-1 text-muted">Phone</p>
+                                <h5>@(user.Phone ?? "N/A")</h5>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle"></i> @TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle"></i> @TempData["ErrorMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="bi bi-calendar-check"></i> Booking History (@Model.Bookings.Count total)</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.Bookings.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Confirmation #</th>
+                                        <th>Route</th>
+                                        <th>Travel Date</th>
+                                        <th>Booking Date</th>
+                                        <th>Passengers</th>
+                                        <th>Total Price</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var booking in Model.Bookings)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <strong>@booking.ConfirmationNumber</strong>
+                                            </td>
+                                            <td>
+                                                @booking.Route
+                                                @if (booking.IsMultiLeg)
+                                                {
+                                                    <br/>
+                                                    <small class="text-muted">@booking.Legs.Count leg(s)</small>
+                                                }
+                                            </td>
+                                            <td>@booking.TravelDate</td>
+                                            <td>@booking.BookingDate</td>
+                                            <td>@booking.NumberOfSeats</td>
+                                            <td>$@booking.TotalPrice.ToString("N2")</td>
+                                            <td>
+                                                @if (booking.Status == "Pending")
+                                                {
+                                                    <span class="badge bg-warning text-dark">@booking.Status</span>
+                                                }
+                                                else if (booking.Status == "Confirmed")
+                                                {
+                                                    <span class="badge bg-success">@booking.Status</span>
+                                                }
+                                                else if (booking.Status == "Cancelled")
+                                                {
+                                                    <span class="badge bg-danger">@booking.Status</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-secondary">@booking.Status</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm" role="group">
+                                                    <a asp-controller="Reservation" 
+                                                       asp-action="Details" 
+                                                       asp-route-id="@booking.ReservationID" 
+                                                       class="btn btn-outline-primary"
+                                                       title="View Details">
+                                                        <i class="bi bi-eye"></i>
+                                                    </a>
+                                                    @if (booking.Status != "Cancelled")
+                                                    {
+                                                        <button type="button" 
+                                                                class="btn btn-outline-danger"
+                                                                data-bs-toggle="modal" 
+                                                                data-bs-target="#cancelModal_@booking.ReservationID"
+                                                                title="Cancel Booking">
+                                                            <i class="bi bi-x-circle"></i>
+                                                        </button>
+                                                    }
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        <!-- Cancel Confirmation Modal -->
+                                        <div class="modal fade" id="cancelModal_@booking.ReservationID" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header bg-danger text-white">
+                                                        <h5 class="modal-title" id="cancelModalLabel">
+                                                            <i class="bi bi-exclamation-triangle"></i> Confirm Cancellation
+                                                        </h5>
+                                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <p>Are you sure you want to cancel this booking?</p>
+                                                        <div class="alert alert-warning">
+                                                            <strong>Confirmation Number:</strong> @booking.ConfirmationNumber<br/>
+                                                            <strong>Travel Date:</strong> @booking.TravelDate<br/>
+                                                            <strong>Passenger:</strong> @user?.FirstName @user?.LastName
+                                                        </div>
+                                                        <p class="text-muted small">
+                                                            <i class="bi bi-info-circle"></i> This action will release the reserved seats and update the booking status to "Cancelled".
+                                                        </p>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                            <i class="bi bi-x"></i> No, Keep Booking
+                                                        </button>
+                                                        <form asp-action="CancelBooking" method="post" class="d-inline">
+                                                            @Html.AntiForgeryToken()
+                                                            <input type="hidden" name="id" value="@booking.ReservationID" />
+                                                            <input type="hidden" name="userId" value="@user?.Id" />
+                                                            <button type="submit" class="btn btn-danger">
+                                                                <i class="bi bi-trash"></i> Yes, Cancel Booking
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info text-center" role="alert">
+                            <i class="bi bi-info-circle fs-1"></i>
+                            <h4 class="mt-3">No Bookings Found</h4>
+                            <p>This user has not made any flight reservations yet.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

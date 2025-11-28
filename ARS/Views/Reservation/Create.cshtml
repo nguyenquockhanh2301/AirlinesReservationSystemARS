@@ -1,0 +1,652 @@
+@model ARS.ViewModels.BookingViewModel
+@{
+    ViewData["Title"] = "Complete Your Booking";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Passenger Information</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create" method="post">
+                        @* Single-leg hidden fields (for backward compatibility) *@
+                        <input type="hidden" asp-for="FlightID" />
+                        <input type="hidden" asp-for="ScheduleID" />
+                        <input type="hidden" asp-for="FlightNumber" />
+                        <input type="hidden" asp-for="Origin" />
+                        <input type="hidden" asp-for="Destination" />
+                        <input type="hidden" asp-for="DepartureTime" />
+                        <input type="hidden" asp-for="ArrivalTime" />
+                        <input type="hidden" asp-for="TravelDate" />
+                        <input type="hidden" asp-for="BasePrice" />
+                        <input type="hidden" asp-for="TotalPrice" />
+                        
+                        @* Multi-leg hidden fields *@
+                        @if (Model.IsMultiLeg)
+                        {
+                            for (int i = 0; i < Model.Legs.Count; i++)
+                            {
+                                <input type="hidden" id="Legs_@(i)__FlightID" name="Legs[@i].FlightID" value="@Model.Legs[i].FlightID" />
+                                <input type="hidden" id="Legs_@(i)__ScheduleID" name="Legs[@i].ScheduleID" value="@Model.Legs[i].ScheduleID" />
+                                <input type="hidden" id="Legs_@(i)__FlightNumber" name="Legs[@i].FlightNumber" value="@Model.Legs[i].FlightNumber" />
+                                <input type="hidden" id="Legs_@(i)__Origin" name="Legs[@i].Origin" value="@Model.Legs[i].Origin" />
+                                <input type="hidden" id="Legs_@(i)__Destination" name="Legs[@i].Destination" value="@Model.Legs[i].Destination" />
+                                <input type="hidden" id="Legs_@(i)__TravelDate" name="Legs[@i].TravelDate" value="@Model.Legs[i].TravelDate" />
+                                <input type="hidden" id="Legs_@(i)__BasePrice" name="Legs[@i].BasePrice" value="@Model.Legs[i].BasePrice" />
+                                <input type="hidden" id="Legs_@(i)__LegOrder" name="Legs[@i].LegOrder" value="@Model.Legs[i].LegOrder" />
+                                <input type="hidden" id="Legs_@(i)__SelectedSeat" name="Legs[@i].SelectedSeat" value="@Model.Legs[i].SelectedSeat" />
+                                <input type="hidden" id="Legs_@(i)__SelectedSeatId" name="Legs[@i].SelectedSeatId" value="@Model.Legs[i].SelectedSeatId" />
+                            }
+                        }
+                        
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label asp-for="FirstName" class="form-label"></label>
+                                <input asp-for="FirstName" class="form-control" readonly />
+                                <span asp-validation-for="FirstName" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="LastName" class="form-label"></label>
+                                <input asp-for="LastName" class="form-control" readonly />
+                                <span asp-validation-for="LastName" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mt-2">
+                            <div class="col-md-6">
+                                <label asp-for="Email" class="form-label"></label>
+                                <input asp-for="Email" class="form-control" type="email" readonly />
+                                <span asp-validation-for="Email" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="Phone" class="form-label"></label>
+                                <input asp-for="Phone" class="form-control" type="tel" readonly />
+                                <span asp-validation-for="Phone" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <h5 class="mb-3">Passenger Details</h5>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label asp-for="NumAdults" class="form-label"></label>
+                                <input asp-for="NumAdults" class="form-control" type="number" min="1" max="10" id="NumAdultsInput" disabled />
+                                <input type="hidden" name="NumAdults" id="NumAdultsHidden" />
+                                <span asp-validation-for="NumAdults" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-4">
+                                <label asp-for="NumChildren" class="form-label"></label>
+                                <input asp-for="NumChildren" class="form-control" type="number" min="0" max="10" id="NumChildrenInput" disabled />
+                                <input type="hidden" name="NumChildren" id="NumChildrenHidden" />
+                                <span asp-validation-for="NumChildren" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-4">
+                                <label asp-for="NumSeniors" class="form-label"></label>
+                                <input asp-for="NumSeniors" class="form-control" type="number" min="0" max="10" id="NumSeniorsInput" disabled />
+                                <input type="hidden" name="NumSeniors" id="NumSeniorsHidden" />
+                                <span asp-validation-for="NumSeniors" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mt-2">
+                            <div class="col-md-6">
+                                <label asp-for="Class" class="form-label"></label>
+                                <select asp-for="Class" class="form-select" id="ClassSelect" disabled>
+                                    <option value="Economy">Economy</option>
+                                    <option value="Business">Business</option>
+                                    <option value="First">First Class</option>
+                                </select>
+                                <!-- Hidden input to actually post the class value because disabled inputs are not submitted -->
+                                <input type="hidden" id="ClassHidden" name="Class" />
+                                <span asp-validation-for="Class" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <input type="hidden" asp-for="SelectedSeat" id="SelectedSeat" />
+                            <input type="hidden" asp-for="SelectedSeatId" id="SelectedSeatId" />
+                            <input type="hidden" name="SeatAssignmentsJson" id="SeatAssignmentsJson" />
+
+                            @* Segment selector for multi-leg bookings (round-trip or multi-city) *@
+                            @if (Model.IsMultiLeg)
+                            {
+                                <div class="mb-2">
+                                    <label class="form-label fw-bold">Select segment to choose seat</label>
+                                    
+                                    @if (Model.Legs.Count <= 2)
+                                    {
+                                        @* For round-trip (2 legs), show as button group *@
+                                        <div class="btn-group w-100" role="group" aria-label="Segments" id="segmentSelector">
+                                            @for (int i = 0; i < Model.Legs.Count; i++)
+                                            {
+                                                var leg = Model.Legs[i];
+                                                <button type="button"
+                                                        class="btn btn-outline-primary segment-btn @(i == 0 ? "active" : "")"
+                                                        data-leg-index="@i">
+                                                    Leg @leg.LegOrder: @leg.Origin → @leg.Destination
+                                                </button>
+                                            }
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        @* For multi-city (3+ legs), show with pagination *@
+                                        <div id="segmentSelector" class="card">
+                                            <div class="card-body p-2">
+                                                <div class="d-flex align-items-center justify-content-between">
+                                                    <button type="button" class="btn btn-sm btn-outline-secondary" id="prevLegBtn">
+                                                        <i class="bi bi-chevron-left"></i> Previous
+                                                    </button>
+                                                    <div class="text-center flex-grow-1 px-3">
+                                                        <div id="currentLegInfo" class="fw-bold"></div>
+                                                        <small id="legCounter" class="text-muted"></small>
+                                                    </div>
+                                                    <button type="button" class="btn btn-sm btn-outline-secondary" id="nextLegBtn">
+                                                        Next <i class="bi bi-chevron-right"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                    
+                                    <small id="segmentHint" class="text-muted d-block mt-1">
+                                        Currently selecting seat for leg 1.
+                                    </small>
+                                </div>
+                            }
+
+                            <button type="button" class="btn btn-outline-secondary w-100 mb-2" id="btnToggleSeatMap">Select Seat</button>
+
+                            <div id="seatMapContainer" class="mb-3" style="display:none;">
+                                <div id="seatMap" class="border p-3" style="background:#fff; max-height:400px; overflow:auto"></div>
+                                <p class="small mt-2"><span class="badge bg-success">&nbsp;</span> Available &nbsp; <span class="badge bg-danger">&nbsp;</span> Unavailable</p>
+                            </div>
+
+                            <button type="submit" class="btn btn-success btn-lg w-100">
+                                <i class="bi bi-check-circle"></i> Confirm Booking
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm sticky-top" style="top: 20px;">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">Booking Summary</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.IsMultiLeg)
+                    {
+                        <h6 class="text-primary mb-3">@(Model.Legs.Count)-Leg Itinerary</h6>
+                        @foreach (var leg in Model.Legs.OrderBy(l => l.LegOrder))
+                        {
+                            <div class="mb-3 pb-3 @(leg.LegOrder < Model.Legs.Count ? "border-bottom" : "")">
+                                <strong class="d-block mb-1">Leg @leg.LegOrder: @leg.FlightNumber</strong>
+                                <p class="mb-1 small">
+                                    <strong>@leg.Origin</strong> → <strong>@leg.Destination</strong>
+                                </p>
+                                <p class="text-muted mb-1 small">
+                                    <i class="bi bi-calendar"></i> @leg.TravelDate.ToString("MMM dd, yyyy")
+                                </p>
+                                <p class="text-muted mb-0 small">
+                                    <i class="bi bi-clock"></i> @leg.DepartureTime.ToString("HH:mm") - @leg.ArrivalTime.ToString("HH:mm")
+                                </p>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <h6 class="text-primary">@Model.FlightNumber</h6>
+                        <p class="mb-2">
+                            <strong>@Model.Origin</strong> → <strong>@Model.Destination</strong>
+                        </p>
+                        <p class="text-muted mb-2">
+                            <i class="bi bi-calendar"></i> @Model.TravelDate.ToString("MMMM dd, yyyy")
+                        </p>
+                        <p class="text-muted mb-2">
+                            <i class="bi bi-clock"></i> @Model.DepartureTime.ToString("HH:mm") - @Model.ArrivalTime.ToString("HH:mm")
+                        </p>
+                    }
+                    
+                    <hr>
+                    
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Class:</span>
+                        <strong>@Model.Class</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Passengers:</span>
+                        <strong>@Model.NumAdults</strong>
+                    </div>
+                    @if (!Model.IsMultiLeg)
+                    {
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Price per person:</span>
+                            <strong>$@Model.BasePrice.ToString("N2")</strong>
+                        </div>
+                    }
+                    
+                    <hr>
+                    
+                    <div class="d-flex justify-content-between">
+                        <h5>Total:</h5>
+                        <h5 class="text-success">$@Model.TotalPrice.ToString("N2")</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+    const btn = document.getElementById('btnToggleSeatMap');
+    const container = document.getElementById('seatMapContainer');
+    const seatMap = document.getElementById('seatMap');
+    const selectedSeatInput = document.getElementById('SelectedSeat');
+    const selectedSeatIdInputRoot = document.getElementById('SelectedSeatId');
+
+    const isMultiLeg = @(Model.IsMultiLeg.ToString().ToLower());
+    const totalLegs = @Model.Legs.Count;
+    const initialAdults = @Model.NumAdults;
+    const initialChildren = @Model.NumChildren;
+    const initialSeniors = @Model.NumSeniors;
+    let currentLegIndex = 0;
+
+    // Passenger tracking - get both visible and hidden inputs
+    const numAdultsInput = document.getElementById('NumAdultsInput');
+    const numChildrenInput = document.getElementById('NumChildrenInput');
+    const numSeniorsInput = document.getElementById('NumSeniorsInput');
+    const numAdultsHidden = document.getElementById('NumAdultsHidden');
+    const numChildrenHidden = document.getElementById('NumChildrenHidden');
+    const numSeniorsHidden = document.getElementById('NumSeniorsHidden');
+
+    // Track seat assignments per leg
+    // seatAssignmentsByLeg[legIndex] = { [seatLabel]: { type: 'adult'|'child'|'senior', flightSeatId: number } }
+    const seatAssignmentsByLeg = {};
+    function getCurrentLegAssignments() {
+        if (!(currentLegIndex in seatAssignmentsByLeg)) {
+            seatAssignmentsByLeg[currentLegIndex] = {};
+        }
+        return seatAssignmentsByLeg[currentLegIndex];
+    }
+    
+    // Get current passenger counts
+    function getPassengerCounts() {
+        let adults = 0, children = 0, seniors = 0;
+        const seatAssignments = getCurrentLegAssignments();
+        Object.values(seatAssignments).forEach(val => {
+            if (!val) return;
+            const type = val.type;
+            if (type === 'adult') adults++;
+            else if (type === 'child') children++;
+            else if (type === 'senior') seniors++;
+        });
+        return { adults, children, seniors };
+    }
+    
+    // Update passenger count inputs
+    function updatePassengerInputs() {
+        // For single-leg, reflect selections; for multi-leg, keep initial values
+        if (!isMultiLeg) {
+            const counts = getPassengerCounts();
+            if (numAdultsInput) numAdultsInput.value = counts.adults;
+            if (numChildrenInput) numChildrenInput.value = counts.children;
+            if (numSeniorsInput) numSeniorsInput.value = counts.seniors;
+            if (numAdultsHidden) numAdultsHidden.value = counts.adults;
+            if (numChildrenHidden) numChildrenHidden.value = counts.children;
+            if (numSeniorsHidden) numSeniorsHidden.value = counts.seniors;
+        }
+    }
+
+    const segmentButtons = document.querySelectorAll('.segment-btn');
+    const segmentHint = document.getElementById('segmentHint');
+    const prevLegBtn = document.getElementById('prevLegBtn');
+    const nextLegBtn = document.getElementById('nextLegBtn');
+    const currentLegInfo = document.getElementById('currentLegInfo');
+    const legCounter = document.getElementById('legCounter');
+
+    // Array to store leg details for multi-city pagination
+    const legs = [
+        @foreach (var leg in Model.Legs)
+        {
+            <text>{ order: @leg.LegOrder, origin: '@leg.Origin', destination: '@leg.Destination' },</text>
+        }
+    ];
+
+    function updateSegmentUI() {
+        // For round-trip (button group)
+        segmentButtons.forEach(btn => {
+            const idx = parseInt(btn.getAttribute('data-leg-index')) || 0;
+            if (idx === currentLegIndex) btn.classList.add('active');
+            else btn.classList.remove('active');
+        });
+        
+        // For multi-city (pagination)
+        if (currentLegInfo && legs.length > 0) {
+            const leg = legs[currentLegIndex];
+            currentLegInfo.textContent = `Leg ${leg.order}: ${leg.origin} → ${leg.destination}`;
+        }
+        if (legCounter) {
+            legCounter.textContent = `Leg ${currentLegIndex + 1} of ${totalLegs}`;
+        }
+        if (prevLegBtn) {
+            prevLegBtn.disabled = currentLegIndex === 0;
+        }
+        if (nextLegBtn) {
+            nextLegBtn.disabled = currentLegIndex === totalLegs - 1;
+        }
+        
+        if (segmentHint) {
+            segmentHint.textContent = `Currently selecting seat for leg ${currentLegIndex + 1}.`;
+        }
+    }
+
+    // Handle round-trip segment buttons
+    segmentButtons.forEach(btnSeg => {
+        btnSeg.addEventListener('click', function(){
+            const idx = parseInt(this.getAttribute('data-leg-index')) || 0;
+            currentLegIndex = idx;
+            updateSegmentUI();
+            if (container.style.display !== 'none') {
+                loadSeatMap();
+            }
+        });
+    });
+
+    // Handle multi-city pagination buttons
+    if (prevLegBtn) {
+        prevLegBtn.addEventListener('click', function() {
+            if (currentLegIndex > 0) {
+                currentLegIndex--;
+                updateSegmentUI();
+                if (container.style.display !== 'none') {
+                    loadSeatMap();
+                }
+            }
+        });
+    }
+
+    if (nextLegBtn) {
+        nextLegBtn.addEventListener('click', function() {
+            if (currentLegIndex < totalLegs - 1) {
+                currentLegIndex++;
+                updateSegmentUI();
+                if (container.style.display !== 'none') {
+                    loadSeatMap();
+                }
+            }
+        });
+    }
+
+    // Initialize UI
+    updateSegmentUI();
+    // Initialize passenger inputs with initial values for multi-leg or when no selection yet
+    if (numAdultsInput) numAdultsInput.value = initialAdults;
+    if (numChildrenInput) numChildrenInput.value = initialChildren;
+    if (numSeniorsInput) numSeniorsInput.value = initialSeniors;
+    if (numAdultsHidden) numAdultsHidden.value = initialAdults;
+    if (numChildrenHidden) numChildrenHidden.value = initialChildren;
+    if (numSeniorsHidden) numSeniorsHidden.value = initialSeniors;
+
+    function getFlightAndDateForCurrentContext() {
+        if (isMultiLeg && totalLegs > 0) {
+            const flightInput = document.getElementById(`Legs_${currentLegIndex}__FlightID`);
+            const dateInput = document.getElementById(`Legs_${currentLegIndex}__TravelDate`);
+            const scheduleInput = document.getElementById(`Legs_${currentLegIndex}__ScheduleID`);
+            if (!flightInput || !dateInput) return null;
+            return { 
+                flightId: flightInput.value, 
+                travelDateRaw: dateInput.value,
+                scheduleId: scheduleInput ? scheduleInput.value : null
+            };
+        } else {
+            const flightId = document.querySelector('input[name="FlightID"]').value;
+            let travelDateRaw = document.querySelector('input[name="TravelDate"]').value;
+            const scheduleId = document.querySelector('input[name="ScheduleID"]')?.value;
+            return { flightId, travelDateRaw, scheduleId };
+        }
+    }
+
+    async function loadSeatMap() {
+        const ctx = getFlightAndDateForCurrentContext();
+        if (!ctx || !ctx.flightId) return;
+        let { flightId, travelDateRaw, scheduleId } = ctx;
+
+        // normalize travel date to yyyy-MM-dd if possible
+        try {
+            if (travelDateRaw && travelDateRaw.includes('/')) {
+                const parts = travelDateRaw.split('/').map(p => p.trim());
+                if (parts.length === 3) travelDateRaw = `${parts[2]}-${parts[0].padStart(2,'0')}-${parts[1].padStart(2,'0')}`;
+            }
+        } catch (e) { /* ignore and send raw */ }
+
+        let url = `/Reservation/GetSeatMap?flightId=${encodeURIComponent(flightId)}&travelDate=${encodeURIComponent(travelDateRaw)}`;
+        if (scheduleId) {
+            url += `&scheduleId=${encodeURIComponent(scheduleId)}`;
+        }
+        const resp = await fetch(url);
+        const data = await resp.json();
+
+        // render airplane-style rows
+        seatMap.innerHTML = '';
+        const seatGrid = document.createElement('div');
+        seatGrid.className = 'seatmap-airplane';
+
+        // determine class ranges: rows 1-10 First, 11-30 Business, 31+ Economy
+        const firstEnd = 10;
+        const businessEnd = 30;
+
+        const currentAssignments = getCurrentLegAssignments();
+        data.rowsResult.forEach(r => {
+            // if this row should show a class header, insert it
+            const rowNum = Number(r.row);
+            if (!isNaN(rowNum)) {
+                if (rowNum === 1) {
+                    const hdr = document.createElement('div');
+                    hdr.className = 'seat-class-header mb-2';
+                    hdr.textContent = 'First Class';
+                    seatGrid.appendChild(hdr);
+                } else if (rowNum === firstEnd + 1) {
+                    const hdr = document.createElement('div');
+                    hdr.className = 'seat-class-header mb-2';
+                    hdr.textContent = 'Business Class';
+                    seatGrid.appendChild(hdr);
+                } else if (rowNum === businessEnd + 1) {
+                    const hdr = document.createElement('div');
+                    hdr.className = 'seat-class-header mb-2';
+                    hdr.textContent = 'Economy Class';
+                    seatGrid.appendChild(hdr);
+                }
+            }
+            const rowDiv = document.createElement('div');
+            rowDiv.className = 'seat-row d-flex align-items-center mb-2';
+
+            const rowLabel = document.createElement('div');
+            rowLabel.className = 'seat-row-label me-3 fw-bold';
+            rowLabel.textContent = r.row;
+            rowDiv.appendChild(rowLabel);
+
+            // wrap seats in a container so we can center them independent of the label width
+            const seatsContainer = document.createElement('div');
+            seatsContainer.className = 'seat-buttons d-flex flex-wrap align-items-center justify-content-center';
+
+            r.seats.forEach(s => {
+                const seatBtn = document.createElement('button');
+                seatBtn.type = 'button';
+                seatBtn.className = 'btn btn-sm me-1';
+                seatBtn.style.width = '56px';
+                seatBtn.textContent = s.label;
+                seatBtn.title = `${s.label} - ${s.cabin}`;
+                seatBtn.dataset.flightSeatId = s.id;
+                seatBtn.dataset.seatLabel = s.label;
+                
+                if (s.available) {
+                    // Available seat - can be clicked to cycle through passenger types
+                    const assigned = currentAssignments[s.label] ? currentAssignments[s.label].type : null;
+                    applySeatStyle(seatBtn, assigned || null);
+                    
+                    seatBtn.addEventListener('click', () => {
+                        // Cycle through: null -> adult -> child -> senior -> null
+                        const currentType = (currentAssignments[s.label] ? currentAssignments[s.label].type : null) || null;
+                        let nextType = null;
+                        
+                        if (currentType === null) nextType = 'adult';
+                        else if (currentType === 'adult') nextType = 'child';
+                        else if (currentType === 'child') nextType = 'senior';
+                        else if (currentType === 'senior') nextType = null;
+                        
+                        // Update assignment
+                        if (nextType === null) {
+                            delete currentAssignments[s.label];
+                        } else {
+                            currentAssignments[s.label] = { type: nextType, flightSeatId: s.id };
+                        }
+                        
+                        // Update seat button appearance
+                        applySeatStyle(seatBtn, nextType);
+                        
+                        // Update passenger counts
+                        updatePassengerInputs();
+                        
+                        // set class based on row number
+                        const numericRow = parseInt(s.label, 10);
+                        let seatClass = 'Economy';
+                        if (!isNaN(numericRow)) {
+                            if (numericRow <= firstEnd) seatClass = 'First';
+                            else if (numericRow <= businessEnd) seatClass = 'Business';
+                            else seatClass = 'Economy';
+                        }
+                        // set visible select (disabled) and hidden input used for POST
+                        const classSelect = document.getElementById('ClassSelect');
+                        const classHidden = document.getElementById('ClassHidden');
+                        if (classSelect) {
+                            classSelect.value = seatClass;
+                        }
+                        if (classHidden) {
+                            classHidden.value = seatClass;
+                        }
+                    });
+                } else {
+                    // Unavailable seat - booked/reserved
+                    seatBtn.classList.add('btn-danger');
+                    seatBtn.disabled = true;
+                }
+                seatsContainer.appendChild(seatBtn);
+
+                // insert aisle between C and D
+                if (s.col === 'C') {
+                    const aisle = document.createElement('div');
+                    aisle.className = 'seat-aisle';
+                    seatsContainer.appendChild(aisle);
+                }
+            });
+
+            rowDiv.appendChild(seatsContainer);
+            seatGrid.appendChild(rowDiv);
+        });
+
+        seatMap.appendChild(seatGrid);
+        
+        // Add legend
+        const legend = document.createElement('div');
+        legend.className = 'mt-3 p-2 bg-light border rounded';
+        legend.innerHTML = `
+            <small class="d-block fw-bold mb-1">Click seats to assign passengers:</small>
+            <span class="badge bg-success">&nbsp;&nbsp;</span> Available &nbsp;
+            <span class="badge bg-primary text-white">&nbsp;&nbsp;</span> Adult &nbsp;
+            <span class="badge bg-info text-white">&nbsp;&nbsp;</span> Child &nbsp;
+            <span class="badge bg-warning text-dark">&nbsp;&nbsp;</span> Senior &nbsp;
+            <span class="badge bg-danger">&nbsp;&nbsp;</span> Unavailable
+        `;
+        seatMap.appendChild(legend);
+        
+        container.style.display = '';
+        btn.textContent = 'Hide Seat Map';
+    }
+    
+    function applySeatStyle(button, passengerType) {
+        // Remove all type classes
+        button.classList.remove('btn-success', 'btn-primary', 'btn-info', 'btn-warning');
+        
+        // Extract just the seat label (e.g., "1A") from button
+        // Store it as a data attribute on first render to avoid text accumulation
+        if (!button.dataset.seatLabel) {
+            button.dataset.seatLabel = button.textContent.trim().split('\n')[0].trim();
+        }
+        const seatLabel = button.dataset.seatLabel;
+        
+        if (passengerType === 'adult') {
+            button.classList.add('btn-primary');
+            button.innerHTML = seatLabel + '<br><small>Adult</small>';
+        } else if (passengerType === 'child') {
+            button.classList.add('btn-info');
+            button.innerHTML = seatLabel + '<br><small>Child</small>';
+        } else if (passengerType === 'senior') {
+            button.classList.add('btn-warning');
+            button.innerHTML = seatLabel + '<br><small>Senior</small>';
+        } else {
+            // Available (not assigned)
+            button.classList.add('btn-success');
+            button.textContent = seatLabel;
+        }
+    }
+
+    btn.addEventListener('click', async () => {
+        if (container.style.display === 'none') {
+            await loadSeatMap();
+        } else {
+            container.style.display = 'none';
+            btn.textContent = 'Select Seat';
+        }
+    });
+
+    // Serialize selections on submit
+    const form = document.querySelector('form[method="post"][asp-action="Create"], form[action$="/Reservation/Create"]') || document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', function() {
+            try {
+                const payload = { seats: [] };
+                if (isMultiLeg) {
+                    // For now, only serialize current leg seats to avoid mismatched counts; extend later per-leg
+                    const current = getCurrentLegAssignments();
+                    for (const [label, info] of Object.entries(current)) {
+                        if (!info) continue;
+                        payload.seats.push({ seatLabel: label, flightSeatId: info.flightSeatId, passengerType: info.type, legIndex: currentLegIndex });
+                    }
+                } else {
+                    const current = getCurrentLegAssignments();
+                    for (const [label, info] of Object.entries(current)) {
+                        if (!info) continue;
+                        payload.seats.push({ seatLabel: label, flightSeatId: info.flightSeatId, passengerType: info.type });
+                    }
+                }
+                const hidden = document.getElementById('SeatAssignmentsJson');
+                if (hidden) hidden.value = JSON.stringify(payload);
+                // Ensure ClassHidden mirrors current select value
+                const classSelect = document.getElementById('ClassSelect');
+                const classHidden = document.getElementById('ClassHidden');
+                if (classHidden && classSelect) classHidden.value = classSelect.value;
+                // Ensure hidden passenger counts set if empty
+                if (numAdultsHidden && !numAdultsHidden.value) numAdultsHidden.value = numAdultsInput ? numAdultsInput.value : initialAdults;
+                if (numChildrenHidden && !numChildrenHidden.value) numChildrenHidden.value = numChildrenInput ? numChildrenInput.value : initialChildren;
+                if (numSeniorsHidden && !numSeniorsHidden.value) numSeniorsHidden.value = numSeniorsInput ? numSeniorsInput.value : initialSeniors;
+            } catch (e) {
+                console.warn('Failed to serialize seat assignments', e);
+            }
+        });
+    }
+});
+</script>

@@ -1,0 +1,546 @@
+@model ARS.ViewModels.FlightSearchResultViewModel
+@using Microsoft.AspNetCore.Mvc.Rendering
+@{
+    ViewData["Title"] = "Flight Search Results";
+}
+
+<div class="container mt-4">
+    @* Filter Form *@
+    <div class="card shadow-sm mb-4">
+        <div class="card-body bg-light">
+            <form asp-action="Search" method="post" id="flightSearchForm" class="row g-3">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="TripType" value="@Model.SearchCriteria.TripType" />
+                
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">From</label>
+                    @{ var cities = (IEnumerable<SelectListItem>)ViewBag.Cities; }
+                    <select name="OriginCityID" class="form-select" required>
+                        <option value="">Select Origin</option>
+                        @foreach (var c in cities)
+                        {
+                            var isSelected = Model.SearchCriteria.OriginCityID?.ToString() == c.Value;
+                            @if (isSelected)
+                            {
+                                <option value="@c.Value" selected="selected">@c.Text</option>
+                            }
+                            else
+                            {
+                                <option value="@c.Value">@c.Text</option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">To</label>
+                    <select name="DestinationCityID" class="form-select" required>
+                        <option value="">Select Destination</option>
+                        @foreach (var c in cities)
+                        {
+                            var isSelected2 = Model.SearchCriteria.DestinationCityID?.ToString() == c.Value;
+                            @if (isSelected2)
+                            {
+                                <option value="@c.Value" selected="selected">@c.Text</option>
+                            }
+                            else
+                            {
+                                <option value="@c.Value">@c.Text</option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label fw-bold">Depart Date</label>
+                    <input type="date" name="TravelDate" class="form-control" value="@Model.SearchCriteria.TravelDate.ToString("yyyy-MM-dd")" required />
+                </div>
+
+                @if (Model.SearchCriteria.TripType == "RoundTrip")
+                {
+                    <div class="col-md-2">
+                        <label class="form-label fw-bold">Return Date</label>
+                        <input type="date" name="ReturnDate" class="form-control" value="@(Model.SearchCriteria.ReturnDate?.ToString("yyyy-MM-dd") ?? string.Empty)" required />
+                    </div>
+                }
+
+                <input type="hidden" name="Passengers" value="@Model.SearchCriteria.Passengers" />
+                <input type="hidden" name="Class" value="@Model.SearchCriteria.Class" />
+
+                <div class="col-md-12 text-end">
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Search Flights</button>
+                    <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> New Search</a>
+                </div>
+            </form>
+            
+            <div class="alert alert-info mt-3 mb-0">
+                <i class="bi bi-info-circle"></i> 
+                <strong>Please select your origin and destination cities above and click "Search Flights" to view available options.</strong>
+                Both origin and destination cities are required for round-trip and multi-city searches.
+            </div>
+        </div>
+    </div>
+
+    @{ 
+        bool anyFound = (Model.Flights != null && Model.Flights.Any()) || (Model.OutboundFlights != null && Model.OutboundFlights.Any()) || (Model.LegsResults != null && Model.LegsResults.Any(r=>r.Any()));
+    }
+
+    @if (anyFound)
+    {
+        <h4 class="mb-3">Search Results</h4>
+
+        @* One-way results *@
+        @if (Model.Flights != null && Model.Flights.Any())
+        {
+            <h5 class="mb-2">One-way options</h5>
+            @foreach (var flight in Model.Flights)
+            {
+                <div class="card mb-3 shadow-sm">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-3">
+                                <h5 class="text-primary fw-bold mb-0">@flight.FlightNumber</h5>
+                                <small class="text-muted">@flight.AircraftType</small>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="text-center">
+                                        <h6 class="mb-0">@flight.DepartureTime.ToString("MMM dd, yyyy HH:mm")</h6>
+                                        <p class="mb-0 fw-bold">@flight.OriginAirportCode</p>
+                                        <small class="text-muted">@flight.OriginCity</small>
+                                    </div>
+                                    <div class="text-center flex-grow-1 px-3">
+                                        <i class="bi bi-arrow-right text-muted"></i>
+                                        <p class="mb-0 text-muted">@flight.Duration min</p>
+                                    </div>
+                                    <div class="text-center">
+                                        <h6 class="mb-0">@flight.ArrivalTime.ToString("MMM dd, yyyy HH:mm")</h6>
+                                        <p class="mb-0 fw-bold">@flight.DestinationAirportCode</p>
+                                        <small class="text-muted">@flight.DestinationCity</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 text-end">
+                                <h3 class="text-success mb-1">$@flight.FinalPrice.ToString("N2")</h3>
+                                <p class="mb-2 text-muted small">
+                                    <span class="badge bg-secondary">@Model.SearchCriteria.Passengers passenger(s)</span>
+                                </p>
+                                <p class="mb-2 text-muted">@flight.AvailableSeats seats available</p>
+                                <a asp-controller="Reservation" 
+                                   asp-action="Create" 
+                                   asp-route-flightId="@flight.FlightID"
+                                   asp-route-scheduleId="@flight.ScheduleID"
+                                   asp-route-travelDate="@Model.SearchCriteria.TravelDate"
+                                   asp-route-numAdults="@Model.SearchCriteria.Passengers"
+                                   asp-route-class="@Model.SearchCriteria.Class"
+                                   class="btn btn-primary w-100">
+                                    Book Now
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+
+        @* Round-trip results: show outbound + return lists *@
+        @if (Model.OutboundFlights != null && Model.OutboundFlights.Any())
+        {
+            <div class="alert alert-info mb-3">
+                <i class="bi bi-info-circle"></i> Select one outbound and one return flight to book your round-trip in one transaction.
+            </div>
+
+            <h5 class="mb-2">Outbound options (@Model.OutboundTotalResults flights found)</h5>
+            foreach (var flight in Model.OutboundFlights)
+            {
+                <div class="card mb-3 shadow-sm flight-card" data-trip-type="outbound">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <input type="radio" name="outboundFlight" class="form-check-input outbound-radio" 
+                                       data-flight-id="@flight.FlightID" 
+                                       data-schedule-id="@flight.ScheduleID" 
+                                       data-travel-date="@Model.SearchCriteria.TravelDate" 
+                                       data-price="@flight.FinalPrice" />
+                            </div>
+                            <div class="col-md-3">
+                                <h5 class="text-primary fw-bold mb-0">@flight.FlightNumber</h5>
+                                <small class="text-muted">@flight.AircraftType</small>
+                            </div>
+                            <div class="col-md-5">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="text-center">
+                                        <h6 class="mb-0">@flight.DepartureTime.ToString("MMM dd, yyyy HH:mm")</h6>
+                                        <p class="mb-0 fw-bold">@flight.OriginAirportCode</p>
+                                        <small class="text-muted">@flight.OriginCity</small>
+                                    </div>
+                                    <div class="text-center flex-grow-1 px-3">
+                                        <i class="bi bi-arrow-right text-muted"></i>
+                                        <p class="mb-0 text-muted">@flight.Duration min</p>
+                                    </div>
+                                    <div class="text-center">
+                                        <h6 class="mb-0">@flight.ArrivalTime.ToString("MMM dd, yyyy HH:mm")</h6>
+                                        <p class="mb-0 fw-bold">@flight.DestinationAirportCode</p>
+                                        <small class="text-muted">@flight.DestinationCity</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 text-end">
+                                <h3 class="text-success mb-1">$@flight.FinalPrice.ToString("N2")</h3>
+                                <p class="mb-2 text-muted small">
+                                    <span class="badge bg-secondary">@Model.SearchCriteria.Passengers passenger(s)</span>
+                                </p>
+                                <p class="mb-2 text-muted">@flight.AvailableSeats seats available</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            @* Outbound Pagination *@
+            @if (Model.OutboundTotalPages > 1)
+            {
+                <nav aria-label="Outbound flights pagination" class="mb-4">
+                    <form asp-action="Search" method="post" id="outboundPaginationForm">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="TripType" value="@Model.SearchCriteria.TripType" />
+                        <input type="hidden" name="OriginCityID" value="@Model.SearchCriteria.OriginCityID" />
+                        <input type="hidden" name="DestinationCityID" value="@Model.SearchCriteria.DestinationCityID" />
+                        <input type="hidden" name="TravelDate" value="@Model.SearchCriteria.TravelDate.ToString("yyyy-MM-dd")" />
+                        <input type="hidden" name="ReturnDate" value="@(Model.SearchCriteria.ReturnDate?.ToString("yyyy-MM-dd"))" />
+                        <input type="hidden" name="Passengers" value="@Model.SearchCriteria.Passengers" />
+                        <input type="hidden" name="Class" value="@Model.SearchCriteria.Class" />
+                        <input type="hidden" name="ReturnPage" value="@Model.ReturnCurrentPage" />
+                        <input type="hidden" name="OutboundPage" id="outboundPageInput" value="@Model.OutboundCurrentPage" />
+                        
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item @(Model.OutboundCurrentPage == 1 ? "disabled" : "")">
+                                <button type="button" class="page-link" onclick="submitOutboundPage(@(Model.OutboundCurrentPage - 1))" @(Model.OutboundCurrentPage == 1 ? "disabled" : "")>
+                                    <i class="bi bi-chevron-left"></i> Previous
+                                </button>
+                            </li>
+                            @for (var i = 1; i <= Model.OutboundTotalPages; i++)
+                            {
+                                <li class="page-item @(i == Model.OutboundCurrentPage ? "active" : "")">
+                                    <button type="button" class="page-link" onclick="submitOutboundPage(@i)">@i</button>
+                                </li>
+                            }
+                            <li class="page-item @(Model.OutboundCurrentPage >= Model.OutboundTotalPages ? "disabled" : "")">
+                                <button type="button" class="page-link" onclick="submitOutboundPage(@(Model.OutboundCurrentPage + 1))" @(Model.OutboundCurrentPage >= Model.OutboundTotalPages ? "disabled" : "")>
+                                    Next <i class="bi bi-chevron-right"></i>
+                                </button>
+                            </li>
+                        </ul>
+                    </form>
+                </nav>
+            }
+        }
+
+        @if (Model.ReturnFlights != null && Model.ReturnFlights.Any())
+        {
+            <h5 class="mb-2 mt-4">Return options (@Model.ReturnTotalResults flights found)</h5>
+            foreach (var flight in Model.ReturnFlights)
+            {
+                <div class="card mb-3 shadow-sm flight-card" data-trip-type="return">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <input type="radio" name="returnFlight" class="form-check-input return-radio" 
+                                       data-flight-id="@flight.FlightID" 
+                                       data-schedule-id="@flight.ScheduleID" 
+                                       data-travel-date="@(Model.SearchCriteria.ReturnDate ?? Model.SearchCriteria.TravelDate)" 
+                                       data-price="@flight.FinalPrice" />
+                            </div>
+                            <div class="col-md-3">
+                                <h5 class="text-primary fw-bold mb-0">@flight.FlightNumber</h5>
+                                <small class="text-muted">@flight.AircraftType</small>
+                            </div>
+                            <div class="col-md-5">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="text-center">
+                                        <h6 class="mb-0">@flight.DepartureTime.ToString("MMM dd, yyyy HH:mm")</h6>
+                                        <p class="mb-0 fw-bold">@flight.OriginAirportCode</p>
+                                        <small class="text-muted">@flight.OriginCity</small>
+                                    </div>
+                                    <div class="text-center flex-grow-1 px-3">
+                                        <i class="bi bi-arrow-right text-muted"></i>
+                                        <p class="mb-0 text-muted">@flight.Duration min</p>
+                                    </div>
+                                    <div class="text-center">
+                                        <h6 class="mb-0">@flight.ArrivalTime.ToString("MMM dd, yyyy HH:mm")</h6>
+                                        <p class="mb-0 fw-bold">@flight.DestinationAirportCode</p>
+                                        <small class="text-muted">@flight.DestinationCity</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 text-end">
+                                <h3 class="text-success mb-1">$@flight.FinalPrice.ToString("N2")</h3>
+                                <p class="mb-2 text-muted small">
+                                    <span class="badge bg-secondary">@Model.SearchCriteria.Passengers passenger(s)</span>
+                                </p>
+                                <p class="mb-2 text-muted">@flight.AvailableSeats seats available</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            @* Return Pagination *@
+            @if (Model.ReturnTotalPages > 1)
+            {
+                <nav aria-label="Return flights pagination" class="mb-4">
+                    <form asp-action="Search" method="post" id="returnPaginationForm">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="TripType" value="@Model.SearchCriteria.TripType" />
+                        <input type="hidden" name="OriginCityID" value="@Model.SearchCriteria.OriginCityID" />
+                        <input type="hidden" name="DestinationCityID" value="@Model.SearchCriteria.DestinationCityID" />
+                        <input type="hidden" name="TravelDate" value="@Model.SearchCriteria.TravelDate.ToString("yyyy-MM-dd")" />
+                        <input type="hidden" name="ReturnDate" value="@(Model.SearchCriteria.ReturnDate?.ToString("yyyy-MM-dd"))" />
+                        <input type="hidden" name="Passengers" value="@Model.SearchCriteria.Passengers" />
+                        <input type="hidden" name="Class" value="@Model.SearchCriteria.Class" />
+                        <input type="hidden" name="OutboundPage" value="@Model.OutboundCurrentPage" />
+                        <input type="hidden" name="ReturnPage" id="returnPageInput" value="@Model.ReturnCurrentPage" />
+                        
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item @(Model.ReturnCurrentPage == 1 ? "disabled" : "")">
+                                <button type="button" class="page-link" onclick="submitReturnPage(@(Model.ReturnCurrentPage - 1))" @(Model.ReturnCurrentPage == 1 ? "disabled" : "")>
+                                    <i class="bi bi-chevron-left"></i> Previous
+                                </button>
+                            </li>
+                            @for (var i = 1; i <= Model.ReturnTotalPages; i++)
+                            {
+                                <li class="page-item @(i == Model.ReturnCurrentPage ? "active" : "")">
+                                    <button type="button" class="page-link" onclick="submitReturnPage(@i)">@i</button>
+                                </li>
+                            }
+                            <li class="page-item @(Model.ReturnCurrentPage >= Model.ReturnTotalPages ? "disabled" : "")">
+                                <button type="button" class="page-link" onclick="submitReturnPage(@(Model.ReturnCurrentPage + 1))" @(Model.ReturnCurrentPage >= Model.ReturnTotalPages ? "disabled" : "")>
+                                    Next <i class="bi bi-chevron-right"></i>
+                                </button>
+                            </li>
+                        </ul>
+                    </form>
+                </nav>
+            }
+
+            <!-- Combined Booking Button for Round-Trip -->
+            <div class="card shadow-sm bg-light mb-4">
+                <div class="card-body text-center">
+                    <h5>Book Round-Trip Together</h5>
+                    <p id="roundTripSummary" class="text-muted mb-2">Select one outbound and one return flight above</p>
+                    <h3 id="roundTripTotal" class="text-success mb-3">$0.00</h3>
+                    <button id="bookRoundTripBtn" class="btn btn-success btn-lg" disabled>
+                        <i class="bi bi-cart-check"></i> Book Round-Trip
+                    </button>
+                </div>
+            </div>
+        }
+
+        @* Multi-city legs results *@
+        @if (Model.LegsResults != null && Model.LegsResults.Any())
+        {
+            <div class="alert alert-info mb-3">
+                <i class="bi bi-info-circle"></i> Select one flight for each leg to book your multi-city trip in one transaction.
+            </div>
+
+            for (int i = 0; i < Model.LegsResults.Count; i++)
+            {
+                var legResults = Model.LegsResults[i];
+                var legTravelDate = Model.SearchCriteria.Legs != null && i < Model.SearchCriteria.Legs.Count ? Model.SearchCriteria.Legs[i].TravelDate : DateOnly.FromDateTime(DateTime.Now);
+                <h5 class="mb-2 mt-3">Leg @(i+1) options</h5>
+                if (legResults.Any())
+                {
+                    foreach (var flight in legResults)
+                    {
+                        <div class="card mb-3 shadow-sm flight-card" data-trip-type="multi-city" data-leg="@i">
+                            <div class="card-body">
+                                <div class="row align-items-center">
+                                    <div class="col-auto">
+                                        <input type="radio" name="multiCityLeg@(i)" class="form-check-input multi-city-radio" 
+                                               data-leg="@i"
+                                               data-flight-id="@flight.FlightID" 
+                                               data-schedule-id="@flight.ScheduleID" 
+                                               data-travel-date="@legTravelDate" 
+                                               data-price="@flight.FinalPrice" />
+                                    </div>
+                                    <div class="col-md-3">
+                                        <h5 class="text-primary fw-bold mb-0">@flight.FlightNumber</h5>
+                                        <small class="text-muted">@flight.AircraftType</small>
+                                    </div>
+                                    <div class="col-md-5">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="text-center">
+                                                <h6 class="mb-0">@flight.DepartureTime.ToString("MMM dd, yyyy HH:mm")</h6>
+                                                <p class="mb-0 fw-bold">@flight.OriginAirportCode</p>
+                                                <small class="text-muted">@flight.OriginCity</small>
+                                            </div>
+                                            <div class="text-center flex-grow-1 px-3">
+                                                <i class="bi bi-arrow-right text-muted"></i>
+                                                <p class="mb-0 text-muted">@flight.Duration min</p>
+                                            </div>
+                                            <div class="text-center">
+                                                <h6 class="mb-0">@flight.ArrivalTime.ToString("MMM dd, yyyy HH:mm")</h6>
+                                                <p class="mb-0 fw-bold">@flight.DestinationAirportCode</p>
+                                                <small class="text-muted">@flight.DestinationCity</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 text-end">
+                                        <h3 class="text-success mb-1">$@flight.FinalPrice.ToString("N2")</h3>
+                                        <p class="mb-2 text-muted small">
+                                            <span class="badge bg-secondary">@Model.SearchCriteria.Passengers passenger(s)</span>
+                                        </p>
+                                        <p class="mb-2 text-muted">@flight.AvailableSeats seats available</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="alert alert-warning">No options found for leg @(i+1).</div>
+                }
+            }
+
+            <!-- Combined Booking Button for Multi-City -->
+            <div class="card shadow-sm bg-light mb-4">
+                <div class="card-body text-center">
+                    <h5>Book Multi-City Trip Together</h5>
+                    <p id="multiCitySummary" class="text-muted mb-2">Select one flight for each leg above</p>
+                    <h3 id="multiCityTotal" class="text-success mb-3">$0.00</h3>
+                    <button id="bookMultiCityBtn" class="btn btn-success btn-lg" disabled>
+                        <i class="bi bi-cart-check"></i> Book Multi-City Trip
+                    </button>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="alert alert-warning text-center" role="alert">
+            <i class="bi bi-exclamation-triangle fs-1"></i>
+            <h4 class="mt-3">No flights found</h4>
+            <p>Sorry, we couldn't find any flights matching your search criteria. Please try different dates or destinations.</p>
+            <a asp-action="Index" class="btn btn-primary mt-2">Search Again</a>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        // Round-trip booking logic
+        let selectedOutbound = null;
+        let selectedReturn = null;
+
+        $('.outbound-radio').on('change', function() {
+            selectedOutbound = {
+                flightId: $(this).data('flight-id'),
+                scheduleId: $(this).data('schedule-id'),
+                travelDate: $(this).data('travel-date'),
+                price: parseFloat($(this).data('price'))
+            };
+            updateRoundTripButton();
+        });
+
+        $('.return-radio').on('change', function() {
+            selectedReturn = {
+                flightId: $(this).data('flight-id'),
+                scheduleId: $(this).data('schedule-id'),
+                travelDate: $(this).data('travel-date'),
+                price: parseFloat($(this).data('price'))
+            };
+            updateRoundTripButton();
+        });
+
+        function updateRoundTripButton() {
+            if (selectedOutbound && selectedReturn) {
+                const total = selectedOutbound.price + selectedReturn.price;
+                $('#roundTripTotal').text('$' + total.toFixed(2));
+                $('#roundTripSummary').text('Outbound and return flights selected');
+                $('#bookRoundTripBtn').prop('disabled', false);
+            } else {
+                $('#bookRoundTripBtn').prop('disabled', true);
+                $('#roundTripSummary').text('Select one outbound and one return flight above');
+            }
+        }
+
+        $('#bookRoundTripBtn').on('click', function() {
+            if (selectedOutbound && selectedReturn) {
+                const flightIds = selectedOutbound.flightId + ',' + selectedReturn.flightId;
+                const scheduleIds = selectedOutbound.scheduleId + ',' + selectedReturn.scheduleId;
+                const travelDates = selectedOutbound.travelDate + ',' + selectedReturn.travelDate;
+                const numAdults = @Model.SearchCriteria.Passengers;
+                const classType = '@Model.SearchCriteria.Class';
+
+                window.location.href = `/Reservation/Create?flightIds=${flightIds}&scheduleIds=${scheduleIds}&travelDates=${travelDates}&numAdults=${numAdults}&classType=${classType}`;
+            }
+        });
+
+        // Multi-city booking logic
+        const multiCityLegs = @Model.LegsResults.Count;
+        let selectedMultiCity = {};
+
+        $('.multi-city-radio').on('change', function() {
+            const leg = $(this).data('leg');
+            selectedMultiCity[leg] = {
+                flightId: $(this).data('flight-id'),
+                scheduleId: $(this).data('schedule-id'),
+                travelDate: $(this).data('travel-date'),
+                price: parseFloat($(this).data('price'))
+            };
+            updateMultiCityButton();
+        });
+
+        function updateMultiCityButton() {
+            const selectedCount = Object.keys(selectedMultiCity).length;
+            if (selectedCount === multiCityLegs) {
+                let total = 0;
+                for (let leg in selectedMultiCity) {
+                    total += selectedMultiCity[leg].price;
+                }
+                $('#multiCityTotal').text('$' + total.toFixed(2));
+                $('#multiCitySummary').text(`All ${multiCityLegs} legs selected`);
+                $('#bookMultiCityBtn').prop('disabled', false);
+            } else {
+                $('#bookMultiCityBtn').prop('disabled', true);
+                $('#multiCitySummary').text(`Select one flight for each of the ${multiCityLegs} legs`);
+            }
+        }
+
+        $('#bookMultiCityBtn').on('click', function() {
+            if (Object.keys(selectedMultiCity).length === multiCityLegs) {
+                const flightIds = [];
+                const scheduleIds = [];
+                const travelDates = [];
+
+                // Sort by leg order
+                for (let i = 0; i < multiCityLegs; i++) {
+                    if (selectedMultiCity[i]) {
+                        flightIds.push(selectedMultiCity[i].flightId);
+                        scheduleIds.push(selectedMultiCity[i].scheduleId);
+                        travelDates.push(selectedMultiCity[i].travelDate);
+                    }
+                }
+
+                const numAdults = @Model.SearchCriteria.Passengers;
+                const classType = '@Model.SearchCriteria.Class';
+
+                window.location.href = `/Reservation/Create?flightIds=${flightIds.join(',')}&scheduleIds=${scheduleIds.join(',')}&travelDates=${travelDates.join(',')}&numAdults=${numAdults}&classType=${classType}`;
+            }
+        });
+    </script>
+}
+
+<script>
+    // Pagination functions for round-trip
+    function submitOutboundPage(page) {
+        document.getElementById('outboundPageInput').value = page;
+        document.getElementById('outboundPaginationForm').submit();
+    }
+
+    function submitReturnPage(page) {
+        document.getElementById('returnPageInput').value = page;
+        document.getElementById('returnPaginationForm').submit();
+    }
+</script>

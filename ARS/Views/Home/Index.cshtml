@@ -1,0 +1,248 @@
+﻿@{
+    ViewData["Title"] = "Book Flights";
+}
+
+<div class="home-landing">
+    <!-- Hero section with booking CTA and visual placeholder -->
+    <section class="hero-banner rounded-4 shadow-sm mb-5">
+        <div class="row align-items-center g-4">
+            <div class="col-lg-7">
+                <p class="hero-kicker text-uppercase fw-semibold mb-2">Your next trip is a few clicks away</p>
+                <h1 class="hero-title mb-3">Book flights in minutes, manage trips anytime.</h1>
+                <p class="hero-subtitle mb-4">
+                    Search hundreds of routes, lock in flexible fares, and manage every detail of your journey
+                    from a single, easy-to-use dashboard.
+                </p>
+                <div class="d-flex flex-wrap gap-3 mb-4">
+                    <a href="/Flight/Search" class="btn btn-primary btn-lg px-4">
+                        <i class="bi bi-search me-2"></i>Find flights
+                    </a>
+                    <a href="/Reservation/MyReservations" class="btn btn-outline-light btn-lg px-4">
+                        <i class="bi bi-ticket-detailed me-2"></i>View my trips
+                    </a>
+                </div>
+                <ul class="hero-benefits list-unstyled mb-0">
+                    <li><i class="bi bi-check-circle-fill text-success me-2"></i>Instant confirmations for every booking</li>
+                    <li><i class="bi bi-check-circle-fill text-success me-2"></i>Self-service changes and rescheduling</li>
+                    <li><i class="bi bi-check-circle-fill text-success me-2"></i>Transparent pricing with smart fare rules</li>
+                </ul>
+            </div>
+            <div class="col-lg-5">
+                <div class="hero-right">
+                    <div class="hero-image-placeholder">
+                        <img src="~/images/plane-2413404_640.jpg" class="img-fluid hero-image" alt="Hero banner image" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Feature highlights -->
+    <section class="home-section mb-5">
+        <h2 class="section-title text-center mb-4">Why book your flights online with us?</h2>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="feature-card h-100">
+                    <div class="feature-icon bg-primary-subtle text-primary">
+                        <i class="bi bi-clock-history"></i>
+                    </div>
+                    <h3 class="h5 mt-3">Book in just a few steps</h3>
+                    <p class="text-muted mb-0">
+                        From search to seat selection, our streamlined flow helps you confirm your trip in minutes—on desktop or mobile.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card h-100">
+                    <div class="feature-icon bg-success-subtle text-success">
+                        <i class="bi bi-cash-coin"></i>
+                    </div>
+                    <h3 class="h5 mt-3">Smart, transparent fares</h3>
+                    <p class="text-muted mb-0">
+                        Dynamic pricing rewards early bookings while keeping rules clear around changes, refunds, and add-ons.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card h-100">
+                    <div class="feature-icon bg-info-subtle text-info">
+                        <i class="bi bi-laptop"></i>
+                    </div>
+                    <h3 class="h5 mt-3">Manage every detail online</h3>
+                    <p class="text-muted mb-0">
+                        View itineraries, update passenger details, change dates, and request refunds without calling support.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Articles about booking convenience -->
+    <section class="home-section mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+            <h2 class="section-title mb-0">Travel tips &amp; booking guides</h2>
+            <span class="text-muted small">Short articles you can expand with your own content and images.</span>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <article class="info-card h-100">
+                    <div class="image-placeholder image-placeholder-wide mb-3">
+                        <img src="~/images/airport-6553696_640.jpg" class="card-image" alt="Travellers using mobile check-in" />
+                    </div>
+                    <h3 class="h5">
+                        <a href="/articles/online-booking-saves-time.html" class="text-decoration-none">How online booking saves you time at the airport</a>
+                    </h3>
+                    <p class="text-muted mb-0">
+                        Explain how completing passenger details and seat selection in advance helps you skip queues
+                        and head straight to security. Encourage travellers to
+                        <a asp-controller="Account" asp-action="Login">log in</a> and keep their details saved for faster booking next time.
+                    </p>
+                </article>
+            </div>
+            <div class="col-md-4">
+                <article class="info-card h-100">
+                    <div class="image-placeholder image-placeholder-wide mb-3">
+                        <img src="~/images/passport-7564502_640.jpg" class="card-image" alt="Family boarding the aircraft" />
+                    </div>
+                    <h3 class="h5">
+                        <a href="/articles/planning-trips-for-friends-and-family.html" class="text-decoration-none">Planning trips for friends and family in one place</a>
+                    </h3>
+                    <p class="text-muted mb-0">
+                        Describe how multi-passenger bookings, saved traveller profiles, and centralised itineraries make group travel easier.
+                        Point readers to the <a asp-controller="Reservation" asp-action="MyReservations">My Reservations</a> page
+                        as the single place to manage every trip.
+                    </p>
+            </div>
+            <div class="col-md-4">
+                <article class="info-card h-100">
+                    <div class="image-placeholder image-placeholder-wide mb-3">
+                        <img src="~/images/miami-5152201_640.jpg" class="card-image" alt="Destination skyline or beach" />
+                    </div>
+                    <h3 class="h5">
+                        <a href="/articles/choosing-the-right-fare.html" class="text-decoration-none">Choosing the right fare for flexible travel</a>
+                    </h3>
+                    <p class="text-muted mb-0">
+                        Introduce your fare types and explain which ones are best for travellers who may need to change or cancel.
+                    </p>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ section -->
+    <section class="home-section home-faq mb-5">
+        <div class="row g-4">
+            <div class="col-lg-5">
+                <h2 class="section-title">Frequently asked questions</h2>
+                <p class="text-muted">
+                    Use these FAQs to answer the most common questions about booking, payments, and changes. You can
+                    edit the text or add more questions at any time.
+                </p>
+            </div>
+            <div class="col-lg-7">
+                <div class="accordion" id="bookingFaq">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="faqOneHeading">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faqOne" aria-expanded="true" aria-controls="faqOne">
+                                Can I change my flight after booking?
+                            </button>
+                        </h2>
+                        <div id="faqOne" class="accordion-collapse collapse show" aria-labelledby="faqOneHeading" data-bs-parent="#bookingFaq">
+                            <div class="accordion-body">
+                                Yes. As long as your fare rules allow changes, you can reschedule from the
+                                <a href="/Reservation/MyReservations">My Reservations</a> page. We’ll show you any price difference
+                                and applicable fees before you confirm.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="faqTwoHeading">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqTwo" aria-expanded="false" aria-controls="faqTwo">
+                                How do I select or change my seat?
+                            </button>
+                        </h2>
+                        <div id="faqTwo" class="accordion-collapse collapse" aria-labelledby="faqTwoHeading" data-bs-parent="#bookingFaq">
+                            <div class="accordion-body">
+                                You can pick a seat during booking using the seat map, or return later via
+                                <a href="/Reservation/MyReservations">My Reservations</a> to update your seat if availability allows.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="faqThreeHeading">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqThree" aria-expanded="false" aria-controls="faqThree">
+                                What payment methods are supported?
+                            </button>
+                        </h2>
+                        <div id="faqThree" class="accordion-collapse collapse" aria-labelledby="faqThreeHeading" data-bs-parent="#bookingFaq">
+                            <div class="accordion-body">
+                                List the payment types you accept here (for example major credit cards or local bank transfers) and
+                                mention how long it takes for payments to be confirmed.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="faqFourHeading">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqFour" aria-expanded="false" aria-controls="faqFour">
+                                Do I need an account to book a flight?
+                            </button>
+                        </h2>
+                        <div id="faqFour" class="accordion-collapse collapse" aria-labelledby="faqFourHeading" data-bs-parent="#bookingFaq">
+                            <div class="accordion-body">
+                                Explain whether guests can book without registering, and highlight the benefits of creating an account,
+                                such as faster checkout and access to previous trips. Add a call to action to
+                                <a href="/Account/Login">log in</a> or create an account before booking.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Destination teaser grid with placeholders -->
+    <section class="home-section mb-3">
+        <h2 class="section-title text-center mb-4">Popular destinations</h2>
+        <div class="row g-4">
+            <div class="col-sm-6 col-lg-3">
+                <div class="destination-card h-100">
+                    <div class="image-placeholder mb-3">
+                        <img src="~/images/beach-6292382_640.jpg" class="card-image" alt="Coastal city" />
+                    </div>
+                    <h3 class="h6 mb-1">Beach getaway</h3>
+                    <p class="small text-muted mb-0">Highlight your favorite seaside destination and seasonal deals.</p>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="destination-card h-100">
+                    <div class="image-placeholder mb-3">
+                        <img src="~/images/city-5772040_640.jpg" class="card-image" alt="City skyline" />
+                    </div>
+                    <h3 class="h6 mb-1">City lights</h3>
+                    <p class="small text-muted mb-0">Feature a business or shopping hub with frequent daily flights.</p>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="destination-card h-100">
+                    <div class="image-placeholder mb-3">
+                        <img src="~/images/mountains-9643430_640.jpg" class="card-image" alt="Mountains" />
+                    </div>
+                    <h3 class="h6 mb-1">Nature escapes</h3>
+                    <p class="small text-muted mb-0">Promote eco-tourism routes or weekend getaways close to nature.</p>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="destination-card h-100">
+                    <div class="image-placeholder mb-3">
+                        <img src="~/images/arno-river-1066307_640.jpg" class="card-image" alt="Cultural landmark" />
+                    </div>
+                    <h3 class="h6 mb-1">Cultural highlights</h3>
+                    <p class="small text-muted mb-0">Showcase historic cities, festivals, or local cultural events.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>

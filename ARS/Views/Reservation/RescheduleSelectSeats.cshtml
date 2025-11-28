@@ -1,0 +1,495 @@
+@{
+    ViewData["Title"] = "Select Seats - Reschedule";
+    var reservationId = ViewBag.ReservationID;
+    var flightId = ViewBag.FlightID;
+    var scheduleId = ViewBag.ScheduleID;
+    var newDate = ViewBag.NewDate;
+    var flight = ViewBag.Flight as ARS.Models.Flight;
+    var reservation = ViewBag.Reservation as ARS.Models.Reservation;
+    var passengers = ViewBag.Passengers;
+    var newTotal = ViewBag.NewTotal;
+    var totalPaid = ViewBag.TotalPaid;
+    var difference = ViewBag.Difference;
+    var seatLayoutId = ViewBag.SeatLayoutId;
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-action="Details" asp-route-id="@reservationId">Reservation Details</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Reschedule" asp-route-id="@reservationId">Reschedule</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Select Seats</li>
+                </ol>
+            </nav>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="bi bi-calendar-event"></i> Reschedule Flight - Select Seats</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <h5><i class="bi bi-airplane"></i> New Flight Details</h5>
+                            <table class="table table-sm">
+                                <tr>
+                                    <th>Flight:</th>
+                                    <td>@flight?.FlightNumber</td>
+                                </tr>
+                                <tr>
+                                    <th>Route:</th>
+                                    <td>@flight?.OriginCity?.CityName → @flight?.DestinationCity?.CityName</td>
+                                </tr>
+                                <tr>
+                                    <th>Date:</th>
+                                    <td>@newDate.ToDateTime(TimeOnly.MinValue).ToString("MMMM dd, yyyy")</td>
+                                </tr>
+                                <tr>
+                                    <th>Departure:</th>
+                                    <td>@flight?.DepartureTime.ToString("hh:mm tt")</td>
+                                </tr>
+                                <tr>
+                                    <th>Arrival:</th>
+                                    <td>@flight?.ArrivalTime.ToString("hh:mm tt")</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h5><i class="bi bi-cash-stack"></i> Pricing Summary</h5>
+                            <table class="table table-sm">
+                                <tr>
+                                    <th>Passengers:</th>
+                                    <td>@passengers</td>
+                                </tr>
+                                <tr>
+                                    <th>Original Class:</th>
+                                    <td><span class="badge bg-info">@reservation?.Class</span></td>
+                                </tr>
+                                <tr>
+                                    <th>New Total:</th>
+                                    <td><strong id="new-total">$@newTotal.ToString("N2")</strong></td>
+                                </tr>
+                                <tr>
+                                    <th>Already Paid:</th>
+                                    <td id="already-paid">$@totalPaid.ToString("N2")</td>
+                                </tr>
+                                <tr class="@(difference > 0 ? "table-danger" : difference < 0 ? "table-success" : "")">
+                                    <th>@(difference > 0 ? "Additional Due:" : difference < 0 ? "Refund:" : "Difference:")</th>
+                                    <td><strong id="additional-due">$@Math.Abs(difference).ToString("N2")</strong></td>
+                                </tr>
+                            </table>
+                            <div class="alert alert-info small">
+                                <i class="bi bi-info-circle"></i> Selecting seats from different classes will update the price automatically.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> Please select <strong>@passengers seat(s)</strong> for your rescheduled flight.
+                    </div>
+
+                    <!-- Seat Map Container -->
+                    <div id="seat-map-container" class="mb-4">
+                        <h5 class="mb-3"><i class="bi bi-grid-3x3"></i> Select Your Seats</h5>
+                        <div id="seat-map-loading" class="text-center">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading seat map...</span>
+                            </div>
+                            <p class="mt-2">Loading available seats...</p>
+                        </div>
+                        <div id="seat-map-content" style="display: none;">
+                            <!-- Seat map will be loaded here via AJAX -->
+                        </div>
+                    </div>
+
+                    <!-- Passenger Count Display -->
+                    <div id="passenger-summary" class="alert alert-secondary">
+                        <strong>Passengers:</strong> 
+                        <span id="adults-count">@reservation?.NumAdults Adult(s)</span>, 
+                        <span id="children-count">@reservation?.NumChildren Child(ren)</span>, 
+                        <span id="seniors-count">@reservation?.NumSeniors Senior(s)</span>
+                    </div>
+
+                    <!-- Navigation Buttons -->
+                    <form id="reschedule-form" asp-action="ConfirmReschedulePost" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="reservationId" value="@reservationId" />
+                        <input type="hidden" name="flightId" value="@flightId" />
+                        <input type="hidden" name="scheduleId" value="@scheduleId" />
+                        <input type="hidden" name="newDate" value="@newDate" />
+                        <input type="hidden" name="SeatAssignmentsJson" id="SeatAssignmentsJson" />
+                    </form>
+                    <div class="d-flex justify-content-between mt-4">
+                        <div>
+                            <a href="javascript:history.back()" class="btn btn-outline-secondary me-2">
+                                <i class="bi bi-arrow-left"></i> Back
+                            </a>
+                            <form asp-action="CancelReschedule" method="post" style="display:inline;">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="reservationId" value="@reservationId" />
+                                <input type="hidden" name="scheduleId" value="@scheduleId" />
+                                <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Are you sure you want to cancel this reschedule? Any seat selections will be lost.')">
+                                    <i class="bi bi-x-circle"></i> Cancel Reschedule
+                                </button>
+                            </form>
+                        </div>
+                        <button type="button" id="continue-btn" class="btn btn-primary">
+                            <i class="bi bi-arrow-right"></i> Continue to Confirmation
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        const scheduleId = @scheduleId;
+        const requiredSeats = @passengers;
+        const reservationId = @reservationId;
+        const flightId = @flightId;
+        const newDate = '@newDate';
+        const baseFare = @(flight?.BaseFare ?? 0);
+        const originalClass = '@reservation?.Class';
+        const numPassengers = @passengers;
+        const initialAdults = @reservation?.NumAdults;
+        const initialChildren = @reservation?.NumChildren;
+        const initialSeniors = @reservation?.NumSeniors;
+        
+        // Track seat assignments: { seatLabel: { type: 'adult'|'child'|'senior', flightSeatId: number } }
+        let seatAssignments = {};
+
+        $(document).ready(function() {
+            loadSeatMap();
+
+            $('#continue-btn').click(function() {
+                // Serialize seat assignments to JSON
+                const payload = { seats: [] };
+                for (const [label, info] of Object.entries(seatAssignments)) {
+                    if (!info) continue;
+                    payload.seats.push({ 
+                        seatLabel: label, 
+                        flightSeatId: info.flightSeatId, 
+                        passengerType: info.type 
+                    });
+                }
+                $('#SeatAssignmentsJson').val(JSON.stringify(payload));
+                
+                // Validate passenger counts match
+                const counts = getPassengerCounts();
+                const totalSelected = counts.adults + counts.children + counts.seniors;
+                const totalRequired = initialAdults + initialChildren + initialSeniors;
+                
+                if (totalSelected !== totalRequired) {
+                    alert(`Please select exactly ${totalRequired} seat(s). Currently selected: ${totalSelected}`);
+                    return;
+                }
+                
+                // Submit form
+                $('#reschedule-form').submit();
+            });
+        });
+        
+        function getPassengerCounts() {
+            let adults = 0, children = 0, seniors = 0;
+            Object.values(seatAssignments).forEach(val => {
+                if (!val) return;
+                const type = val.type;
+                if (type === 'adult') adults++;
+                else if (type === 'child') children++;
+                else if (type === 'senior') seniors++;
+            });
+            return { adults, children, seniors };
+        }
+        
+        function updatePassengerDisplay() {
+            const counts = getPassengerCounts();
+            $('#adults-count').text(counts.adults + ' Adult(s)');
+            $('#children-count').text(counts.children + ' Child(ren)');
+            $('#seniors-count').text(counts.seniors + ' Senior(s)');
+        }
+
+        function loadSeatMap() {
+            $.ajax({
+                url: '@Url.Action("GetSeatMap", "Reservation")',
+                data: { 
+                    flightId: flightId,
+                    travelDate: newDate,
+                    scheduleId: scheduleId
+                },
+                success: function(data) {
+                    $('#seat-map-loading').hide();
+                    renderSeatMap(data);
+                    initializeSeatSelection();
+                },
+                error: function(xhr, status, error) {
+                    console.error('Seat map load error:', error);
+                    $('#seat-map-loading').html('<div class="alert alert-danger">Failed to load seat map. Please try again.</div>');
+                }
+            });
+        }
+
+        function renderSeatMap(data) {
+            const seatGrid = $('<div class="seatmap-airplane"></div>');
+            
+            // Determine class ranges: rows 1-10 First, 11-30 Business, 31+ Economy
+            const firstEnd = 10;
+            const businessEnd = 30;
+            
+            data.rowsResult.forEach(function(rowData) {
+                const rowNum = Number(rowData.row);
+                
+                // Insert class headers
+                if (!isNaN(rowNum)) {
+                    if (rowNum === 1) {
+                        const hdr = $('<div class="seat-class-header mb-2">First Class</div>');
+                        seatGrid.append(hdr);
+                    } else if (rowNum === firstEnd + 1) {
+                        const hdr = $('<div class="seat-class-header mb-2">Business Class</div>');
+                        seatGrid.append(hdr);
+                    } else if (rowNum === businessEnd + 1) {
+                        const hdr = $('<div class="seat-class-header mb-2">Economy Class</div>');
+                        seatGrid.append(hdr);
+                    }
+                }
+                
+                const rowDiv = $('<div class="seat-row d-flex align-items-center mb-2"></div>');
+                
+                // Row label
+                const rowLabel = $('<div class="seat-row-label me-3 fw-bold"></div>').text(rowData.row);
+                rowDiv.append(rowLabel);
+                
+                // Seats container
+                const seatsContainer = $('<div class="seat-buttons d-flex flex-wrap align-items-center justify-content-center"></div>');
+                
+                rowData.seats.forEach(function(seat) {
+                    const seatBtn = $('<button type="button" class="btn btn-sm me-1" style="width: 56px;"></button>');
+                    seatBtn.text(seat.label);
+                    seatBtn.attr('title', seat.label + ' - ' + seat.cabin);
+                    seatBtn.data('flightSeatId', seat.id);
+                    seatBtn.data('seat', seat.label);
+                    seatBtn.data('class', seat.cabin);
+                    seatBtn.data('original-label', seat.label);
+                    
+                    if (seat.available) {
+                        // Available seat - can be clicked to cycle
+                        seatBtn.addClass('btn-success');
+                    } else {
+                        // Reserved seat
+                        seatBtn.addClass('btn-danger');
+                        seatBtn.prop('disabled', true);
+                    }
+                    
+                    seatsContainer.append(seatBtn);
+                    
+                    // Insert aisle between C and D
+                    if (seat.col === 'C') {
+                        const aisle = $('<div class="seat-aisle"></div>');
+                        seatsContainer.append(aisle);
+                    }
+                });
+                
+                rowDiv.append(seatsContainer);
+                seatGrid.append(rowDiv);
+            });
+            
+            // Add legend
+            const legend = $('<div class="mt-3 p-2 bg-light border rounded"></div>');
+            legend.html(`
+                <small class="d-block fw-bold mb-1">Click seats to assign passengers:</small>
+                <span class="badge bg-success">&nbsp;&nbsp;</span> Available &nbsp;
+                <span class="badge bg-primary text-white">&nbsp;&nbsp;</span> Adult &nbsp;
+                <span class="badge bg-info text-white">&nbsp;&nbsp;</span> Child &nbsp;
+                <span class="badge bg-warning text-dark">&nbsp;&nbsp;</span> Senior &nbsp;
+                <span class="badge bg-danger">&nbsp;&nbsp;</span> Reserved
+            `);
+            
+            $('#seat-map-content').empty().append(seatGrid).append(legend).show();
+        }
+
+        function initializeSeatSelection() {
+            $('.btn-success, .btn-primary, .btn-info, .btn-warning').off('click').on('click', function() {
+                if ($(this).prop('disabled')) return;
+                
+                const seatLabel = $(this).data('seat');
+                const seatClass = $(this).data('class') || 'Economy';
+                const seatId = $(this).data('flightSeatId');
+                
+                // Cycle through: null -> adult -> child -> senior -> null
+                const currentType = seatAssignments[seatLabel] ? seatAssignments[seatLabel].type : null;
+                let nextType = null;
+                
+                if (currentType === null || currentType === undefined) nextType = 'adult';
+                else if (currentType === 'adult') nextType = 'child';
+                else if (currentType === 'child') nextType = 'senior';
+                else if (currentType === 'senior') nextType = null;
+                
+                // Update assignment
+                if (nextType === null) {
+                    delete seatAssignments[seatLabel];
+                } else {
+                    seatAssignments[seatLabel] = { type: nextType, flightSeatId: seatId, cabinClass: seatClass };
+                }
+                
+                // Update seat button appearance
+                applySeatStyle($(this), nextType, seatLabel);
+                
+                // Update passenger counts and pricing
+                updatePassengerDisplay();
+                updatePricing();
+            });
+        }
+        
+        function applySeatStyle($button, passengerType, seatLabel) {
+            // Remove all type classes
+            $button.removeClass('btn-success btn-primary btn-info btn-warning');
+            
+            const originalLabel = $button.data('original-label');
+            
+            if (passengerType === 'adult') {
+                $button.addClass('btn-primary');
+                $button.html(originalLabel + '<br><small>Adult</small>');
+            } else if (passengerType === 'child') {
+                $button.addClass('btn-info');
+                $button.html(originalLabel + '<br><small>Child</small>');
+            } else if (passengerType === 'senior') {
+                $button.addClass('btn-warning');
+                $button.html(originalLabel + '<br><small>Senior</small>');
+            } else {
+                // Available (not assigned)
+                $button.addClass('btn-success');
+                $button.text(originalLabel);
+            }
+        }
+
+
+
+        function updatePricing() {
+            // Calculate new price based on selected seat classes
+            let totalPrice = 0;
+            const daysBeforeDeparture = Math.floor((new Date(newDate) - new Date()) / (1000 * 60 * 60 * 24));
+            
+            const timingMultiplier = daysBeforeDeparture >= 30 ? 0.80 :
+                                   daysBeforeDeparture >= 15 ? 1.00 :
+                                   daysBeforeDeparture >= 7 ? 1.20 : 1.50;
+
+            Object.values(seatAssignments).forEach(info => {
+                if (!info) return;
+                const classMultiplier = info.cabinClass === 'Business' ? 2.0 :
+                                      info.cabinClass === 'First' ? 3.5 : 1.0;
+                totalPrice += baseFare * classMultiplier * timingMultiplier;
+            });
+
+            // If not all seats selected, estimate remaining with original class
+            const selectedCount = Object.keys(seatAssignments).length;
+            const remainingSeats = numPassengers - selectedCount;
+            if (remainingSeats > 0) {
+                const originalClassMultiplier = originalClass === 'Business' ? 2.0 :
+                                               originalClass === 'First' ? 3.5 : 1.0;
+                totalPrice += (baseFare * originalClassMultiplier * timingMultiplier * remainingSeats);
+            }
+
+            // Update display
+            const alreadyPaid = parseFloat($('#already-paid').text().replace(/[$,]/g, '')) || 0;
+            const difference = totalPrice - alreadyPaid;
+
+            $('#new-total').text('$' + totalPrice.toFixed(2));
+            $('#additional-due').text('$' + Math.abs(difference).toFixed(2));
+            
+            const dueLabelRow = $('#additional-due').closest('tr');
+            dueLabelRow.removeClass('table-danger table-success');
+            
+            if (difference > 0) {
+                dueLabelRow.addClass('table-danger');
+                dueLabelRow.find('th').text('Additional Due:');
+            } else if (difference < 0) {
+                dueLabelRow.addClass('table-success');
+                dueLabelRow.find('th').text('Refund:');
+            } else {
+                dueLabelRow.find('th').text('Difference:');
+            }
+        }
+    </script>
+
+    <style>
+        /* Airplane-style seat map layout */
+        .seatmap-airplane {
+            max-width: 650px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .seat-class-header {
+            text-align: center;
+            font-weight: bold;
+            font-size: 16px;
+            color: #333;
+            padding: 10px;
+            background: linear-gradient(to right, #f8f9fa, #e9ecef, #f8f9fa);
+            border-radius: 4px;
+            margin-top: 15px;
+            margin-bottom: 10px;
+        }
+        
+        .seat-row {
+            margin-bottom: 8px;
+        }
+        
+        .seat-row-label {
+            min-width: 40px;
+            text-align: center;
+            font-weight: bold;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .seat-buttons {
+            flex: 1;
+        }
+        
+        .seat-buttons .btn {
+            min-width: 50px;
+            height: 45px;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 4px;
+            border-width: 2px;
+            transition: all 0.2s;
+        }
+        
+        .seat-buttons .btn:hover:not(:disabled) {
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        
+        .seat-aisle {
+            width: 30px;
+            min-width: 30px;
+        }
+        
+        /* Passenger type colors */
+        .btn-primary {
+            background-color: #0d6efd !important;
+            border-color: #0d6efd !important;
+            color: white !important;
+        }
+        
+        .btn-info {
+            background-color: #0dcaf0 !important;
+            border-color: #0dcaf0 !important;
+            color: #000 !important;
+        }
+        
+        .btn-warning {
+            background-color: #ffc107 !important;
+            border-color: #ffc107 !important;
+            color: #000 !important;
+        }
+    </style>
+}

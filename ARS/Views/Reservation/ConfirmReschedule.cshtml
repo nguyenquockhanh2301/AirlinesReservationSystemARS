@@ -1,0 +1,145 @@
+@model ARS.ViewModels.ConfirmRescheduleViewModel
+@{
+    ViewData["Title"] = "Confirm Reschedule";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-action="Details" asp-route-id="@Model.Reservation.ReservationID">Reservation Details</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Reschedule" asp-route-id="@Model.Reservation.ReservationID">Reschedule</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Confirm</li>
+                </ol>
+            </nav>
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0"><i class="bi bi-check-circle"></i> Confirm Reschedule</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> Please review the details below before confirming your reschedule.
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5 class="mb-3"><i class="bi bi-airplane-fill"></i> Flight Details</h5>
+                            <table class="table table-borderless">
+                                <tr>
+                                    <th>Confirmation:</th>
+                                    <td><strong>@Model.Reservation.ConfirmationNumber</strong></td>
+                                </tr>
+                                <tr>
+                                    <th>New Flight:</th>
+                                    <td>@Model.NewFlight?.FlightNumber</td>
+                                </tr>
+                                <tr>
+                                    <th>Route:</th>
+                                    <td>@Model.NewFlight?.OriginCity?.CityName → @Model.NewFlight?.DestinationCity?.CityName</td>
+                                </tr>
+                                <tr>
+                                    <th>New Date:</th>
+                                    <td>@Model.NewDate.ToDateTime(TimeOnly.MinValue).ToString("MMMM dd, yyyy")</td>
+                                </tr>
+                                <tr>
+                                    <th>Departure:</th>
+                                    <td>@Model.NewFlight?.DepartureTime.ToString("hh:mm tt")</td>
+                                </tr>
+                                <tr>
+                                    <th>Arrival:</th>
+                                    <td>@Model.NewFlight?.ArrivalTime.ToString("hh:mm tt")</td>
+                                </tr>
+                                @if (!string.IsNullOrEmpty(Model.SelectedSeats))
+                                {
+                                    <tr>
+                                        <th>Selected Seats:</th>
+                                        <td><span class="badge bg-primary">@Model.SelectedSeats</span></td>
+                                    </tr>
+                                }
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h5 class="mb-3"><i class="bi bi-cash-stack"></i> Payment Summary</h5>
+                            <table class="table table-borderless">
+                                <tr>
+                                    <th>New Total Price:</th>
+                                    <td><strong>$@Model.NewTotal.ToString("N2")</strong></td>
+                                </tr>
+                                <tr>
+                                    <th>Amount Already Paid:</th>
+                                    <td>$@Model.TotalPaid.ToString("N2")</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2"><hr /></td>
+                                </tr>
+                            </table>
+
+                            @if (Model.Difference > 0)
+                            {
+                                <div class="alert alert-warning">
+                                    <i class="bi bi-exclamation-triangle"></i> <strong>Additional Payment Required:</strong> $@Model.Difference.ToString("N2")
+                                    <p class="small mb-0 mt-2">This amount will be marked as pending and needs to be paid to complete the reschedule.</p>
+                                </div>
+                            }
+                            else if (Model.Difference < 0)
+                            {
+                                <div class="alert alert-success">
+                                    <i class="bi bi-check-circle"></i> <strong>Refund Amount:</strong> $@Math.Abs(Model.Difference).ToString("N2")
+                                    <p class="small mb-0 mt-2">This amount will be processed as a refund.</p>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="alert alert-info">
+                                    <i class="bi bi-info-circle"></i> <strong>No Price Difference</strong>
+                                    <p class="small mb-0 mt-2">The new flight costs the same as your original booking.</p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <form asp-action="ConfirmReschedulePost" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="reservationId" value="@Model.Reservation.ReservationID" />
+                        <input type="hidden" name="flightId" value="@Model.NewFlight?.FlightID" />
+                        <input type="hidden" name="scheduleId" value="@Model.NewScheduleID" />
+                        <input type="hidden" name="newDate" value="@Model.NewDate" />
+                        <input type="hidden" name="selectedSeats" value="@Model.SelectedSeats" />
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <div>
+                                <a href="javascript:history.back()" class="btn btn-outline-secondary me-2">
+                                    <i class="bi bi-arrow-left"></i> Back
+                                </a>
+                            </div>
+                            <div>
+                                <button type="button" class="btn btn-outline-danger me-2" onclick="cancelReschedule()">
+                                    <i class="bi bi-x-circle"></i> Cancel Reschedule
+                                </button>
+                                <button type="submit" class="btn btn-success btn-lg">
+                                    <i class="bi bi-check-circle"></i> Confirm Reschedule
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                    
+                    <form id="cancel-form" asp-action="CancelReschedule" method="post" style="display:none;">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="reservationId" value="@Model.Reservation.ReservationID" />
+                        <input type="hidden" name="scheduleId" value="@Model.NewScheduleID" />
+                    </form>
+                    
+                    <script>
+                        function cancelReschedule() {
+                            if (confirm('Are you sure you want to cancel this reschedule?')) {
+                                document.getElementById('cancel-form').submit();
+                            }
+                        }
+                    </script>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

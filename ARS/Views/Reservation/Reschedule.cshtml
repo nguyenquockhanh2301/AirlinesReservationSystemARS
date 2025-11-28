@@ -1,0 +1,32 @@
+@model ARS.ViewModels.RescheduleInitViewModel
+@{
+    ViewData["Title"] = "Reschedule Reservation";
+}
+
+<div class="container mt-4">
+    <h3>Reschedule Reservation (@Model.Reservation.ConfirmationNumber)</h3>
+
+    <div class="card mt-3">
+        <div class="card-body">
+            <form asp-action="RescheduleSearch" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" value="@Model.Reservation.ReservationID" />
+
+                <div class="mb-3">
+                    <label class="form-label">Current Travel Date</label>
+                    <p class="form-control-plaintext">@Model.Reservation.TravelDate.ToString("MMMM dd, yyyy")</p>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Select new travel date</label>
+                    <input name="newDate" type="date" class="form-control" value="@Model.NewDate.ToString("yyyy-MM-dd")" />
+                </div>
+
+                <div class="mt-3">
+                    <button type="submit" class="btn btn-primary">Search available flights</button>
+                    <a asp-action="Details" asp-route-id="@Model.Reservation.ReservationID" class="btn btn-secondary ms-2">Back</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

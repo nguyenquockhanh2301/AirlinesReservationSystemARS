@@ -1,0 +1,285 @@
+html {
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #699ad0;
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+  height: 100%;
+}
+
+body {
+  margin-bottom: 0;
+  background: url('../images/cloud.jpg') no-repeat center center fixed;
+  background-size: cover;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Ensure main content stretches to push footer to bottom on short pages */
+body > .container {
+  flex: 1 0 auto;
+}
+
+.ars-footer {
+  margin-top: auto;
+}
+
+.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
+  color: var(--bs-secondary-color);
+  text-align: end;
+}
+
+.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
+  text-align: start;
+}
+
+/* Seat map specific styles */
+.seatmap-airplane {
+  width: 100%;
+}
+.seat-row {
+  display: flex;
+  align-items: center;
+}
+.seat-row-label {
+  min-width: 36px; /* reserve space for row numbers (including two-digit) */
+  text-align: right;
+}
+.seat-buttons {
+  flex: 1 1 auto; /* take remaining space */
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: center; /* center seats horizontally */
+  gap: 6px;
+}
+.seat-buttons .btn {
+  flex: 0 0 auto;
+}
+.seat-aisle {
+  width: 24px;
+  flex: 0 0 24px;
+}
+
+/* make seat labels slightly smaller on narrow screens */
+@media (max-width: 576px) {
+  .seat-buttons .btn {
+    width: 44px !important;
+    font-size: 12px;
+    padding: .25rem .35rem;
+  }
+}
+
+/* header that separates classes in seat map */
+.seat-class-header {
+  width: 100%;
+  text-align: center;
+  font-weight: 600;
+  color: #444;
+  background: rgba(0,0,0,0.03);
+  padding: 6px 0;
+  border-radius: 4px;
+}
+
+/* Top navigation bar */
+.ars-navbar {
+  /* Softer, more pastel header gradient */
+  background: linear-gradient(90deg, #5f7fb1 0%, #38bdf8 45%, #18a3b3 100%);
+}
+
+.ars-navbar .navbar-brand,
+.ars-navbar .nav-link {
+  color: #f8f9fa;
+}
+
+.ars-navbar .nav-link:hover,
+.ars-navbar .navbar-brand:hover {
+  color: #ffffff;
+}
+
+/* Footer */
+.ars-footer {
+  background: #0b2239;
+  color: #f8f9fa;
+}
+
+.ars-footer a.link-light {
+  text-decoration: none;
+}
+
+.ars-footer a.link-light:hover {
+  text-decoration: underline;
+}
+
+/* Home landing page styling */
+.home-landing {
+  margin-top: 2.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.hero-banner {
+  padding: 2.5rem 2.25rem;
+  background: linear-gradient(135deg, #fdf2ff 0%, #e6f5ff 45%, #fef9e7 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-banner::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle at 0 0, rgba(255, 255, 255, 0.7), transparent 55%),
+    radial-gradient(circle at 100% 100%, rgba(255, 255, 255, 0.7), transparent 55%);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.hero-banner > .row {
+  position: relative;
+  z-index: 1;
+}
+
+/* Secondary hero action button ("View my trips") */
+.hero-banner .btn-outline-light {
+  background-color: #ffffff;
+  color: #111827;
+  border-color: transparent;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: box-shadow 0.15s ease, transform 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+}
+
+.hero-banner .btn-outline-light:hover,
+.hero-banner .btn-outline-light:focus {
+  background-color: #ffffff;
+  color: #111827;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+  transform: translateY(-1px);
+}
+
+.hero-kicker {
+  letter-spacing: 0.08em;
+  color: #0d6efd;
+}
+
+.hero-title {
+  font-size: clamp(2.1rem, 2.7vw, 2.8rem);
+  font-weight: 700;
+}
+
+.hero-subtitle {
+  max-width: 36rem;
+}
+
+.hero-benefits li + li {
+  margin-top: 0.15rem;
+}
+
+.hero-right {
+  display: flex;
+  flex-direction: column;
+}
+
+.booking-shortcut {
+  border: none;
+}
+
+.placeholder-input {
+  border-style: dashed;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.hero-image-placeholder {
+  border-radius: 1.5rem;
+  overflow: hidden;
+}
+
+.hero-image {
+  width: 100%;
+  height: 260px;
+  object-fit: cover;
+  display: block;
+}
+
+.image-placeholder {
+  border-radius: 1rem;
+  overflow: hidden;
+  height: 180px;
+}
+
+.image-placeholder-wide {
+  height: 180px;
+}
+
+.card-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.feature-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 999px;
+  font-size: 1.4rem;
+}
+
+.info-card {
+  padding: 1.25rem 1.25rem 1.5rem;
+  border-radius: 1.25rem;
+  background-color: #ffffff;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
+}
+
+.image-placeholder {
+  border-radius: 1rem;
+  border: 2px dashed rgba(148, 163, 184, 0.8);
+  min-height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 45%, #f9fafb 100%);
+  text-align: center;
+  padding: 0.5rem;
+}
+
+.image-placeholder-wide {
+  min-height: 170px;
+}
+
+.home-faq {
+  background-color: #f8fafc;
+  border-radius: 1.5rem;
+  padding: 2rem 1.75rem;
+}
+
+.destination-card {
+  padding: 1rem 1rem 1.25rem;
+  border-radius: 1.1rem;
+  background-color: #ffffff;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.04);
+}
+
+@media (max-width: 767.98px) {
+  .hero-banner {
+    padding: 1.75rem 1.5rem;
+  }
+
+  .home-landing {
+    margin-top: 1.5rem;
+  }
+}

@@ -1,0 +1,252 @@
+@model ARS.Models.Reservation
+@{
+    ViewData["Title"] = "Reservation Details";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-ticket-detailed"></i> Reservation Details</h2>
+        <a asp-action="MyReservations" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back to My Reservations
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Booking Information</h5>
+                    <span class="badge bg-@(Model.Status == "Confirmed" ? "success" : Model.Status == "Cancelled" ? "danger" : "warning") fs-6">
+                        @Model.Status
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p class="mb-1 text-muted">Confirmation Number</p>
+                            <h5 class="text-primary">@Model.ConfirmationNumber</h5>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-1 text-muted">Blocking Number</p>
+                            <h6>@Model.BlockingNumber</h6>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p class="mb-1 text-muted">Booking Date</p>
+                            <p>@Model.BookingDate.ToString("MMMM dd, yyyy")</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-1 text-muted">Travel Date</p>
+                            <p>@Model.TravelDate.ToString("MMMM dd, yyyy")</p>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <h6 class="mb-3">Flight Information</h6>
+
+                    @if (Model.Legs != null && Model.Legs.Any())
+                    {
+                        <h6 class="text-muted mb-2">Multi-leg itinerary (@Model.Legs.Count leg(s))</h6>
+                        @foreach (var leg in Model.Legs.OrderBy(l => l.LegOrder))
+                        {
+                            <div class="border rounded p-3 mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div>
+                                        <span class="badge bg-secondary me-2">Leg @leg.LegOrder</span>
+                                        <strong>@leg.Flight?.FlightNumber</strong>
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="text-muted small">
+                                            @leg.TravelDate.ToString("MMM dd, yyyy")
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p class="mb-1 text-muted">Departure</p>
+                                        <h6>
+                                            @leg.Flight?.OriginCity?.CityName (@leg.Flight?.OriginCity?.AirportCode)
+                                        </h6>
+                                        <p class="text-muted">
+                                            @leg.Flight?.DepartureTime.ToString("HH:mm")
+                                        </p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p class="mb-1 text-muted">Arrival</p>
+                                        <h6>
+                                            @leg.Flight?.DestinationCity?.CityName (@leg.Flight?.DestinationCity?.AirportCode)
+                                        </h6>
+                                        <p class="text-muted">
+                                            @leg.Flight?.ArrivalTime.ToString("HH:mm")
+                                        </p>
+                                    </div>
+                                </div>
+                                @if (!string.IsNullOrEmpty(leg.SeatLabel) || leg.Seat != null)
+                                {
+                                    <div class="mt-2">
+                                        <p class="mb-1 text-muted">Seat</p>
+                                        <span class="badge bg-success">
+                                            @(leg.Seat?.Label ?? leg.SeatLabel)
+                                        </span>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <h5 class="text-primary">@Model.Flight?.FlightNumber</h5>
+                                <p class="text-muted">@Model.Flight?.AircraftType</p>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <p class="mb-1 text-muted">Departure</p>
+                                <h6>@Model.Flight?.OriginCity?.CityName (@Model.Flight?.OriginCity?.AirportCode)</h6>
+                                <p class="text-muted">@Model.Flight?.DepartureTime.ToString("HH:mm")</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-1 text-muted">Arrival</p>
+                                <h6>@Model.Flight?.DestinationCity?.CityName (@Model.Flight?.DestinationCity?.AirportCode)</h6>
+                                <p class="text-muted">@Model.Flight?.ArrivalTime.ToString("HH:mm")</p>
+                            </div>
+                        </div>
+                    }
+
+                    <hr>
+
+                    <h6 class="mb-3">Passenger Information</h6>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <p class="mb-1 text-muted">Adults</p>
+                            <h6>@Model.NumAdults</h6>
+                        </div>
+                        <div class="col-md-4">
+                            <p class="mb-1 text-muted">Children</p>
+                            <h6>@Model.NumChildren</h6>
+                        </div>
+                        <div class="col-md-4">
+                            <p class="mb-1 text-muted">Seniors</p>
+                            <h6>@Model.NumSeniors</h6>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <p class="mb-1 text-muted">Class</p>
+                            <h6><span class="badge bg-info">@Model.Class</span></h6>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-1 text-muted">Total Passengers</p>
+                            <h6>@(Model.NumAdults + Model.NumChildren + Model.NumSeniors)</h6>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Contact Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="mb-1 text-muted">Name</p>
+                            <h6>@Model.User?.FirstName @Model.User?.LastName</h6>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-1 text-muted">Email</p>
+                            <h6>@Model.User?.Email</h6>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <p class="mb-1 text-muted">Phone</p>
+                            <h6>@Model.User?.Phone</h6>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @if (Model.Payments.Any())
+            {
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Payment History</h5>
+                    </div>
+                    <div class="card-body">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Amount</th>
+                                    <th>Method</th>
+                                    <th>Status</th>
+                                    <th>Reference</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var payment in Model.Payments)
+                                {
+                                    <tr>
+                                        <td>@payment.PaymentDate.ToString("MMM dd, yyyy")</td>
+                                        <td>$@payment.Amount.ToString("N2")</td>
+                                        <td>@payment.PaymentMethod</td>
+                                        <td><span class="badge bg-@(payment.TransactionStatus == "Completed" ? "success" : "warning")">@payment.TransactionStatus</span></td>
+                                        <td>@payment.TransactionRefNo</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm sticky-top" style="top: 20px;">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Actions</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.Status == "Pending" || Model.Status == "Confirmed")
+                    {
+                        <a asp-controller="Payment" asp-action="Index" asp-route-reservationId="@Model.ReservationID" 
+                           class="btn btn-success w-100 mb-2">
+                            <i class="bi bi-credit-card"></i> Make Payment
+                        </a>
+                        <a asp-controller="Refund" asp-action="Cancel" asp-route-reservationId="@Model.ReservationID" 
+                           class="btn btn-danger w-100 mb-2">
+                            <i class="bi bi-x-circle"></i> Cancel Booking
+                        </a>
+                        <a asp-controller="Reservation" asp-action="Reschedule" asp-route-id="@Model.ReservationID" 
+                           class="btn btn-warning w-100 mb-2">
+                            <i class="bi bi-calendar-event"></i> Reschedule
+                        </a>
+                    }
+                    <button onclick="window.print()" class="btn btn-outline-primary w-100 mb-2">
+                        <i class="bi bi-printer"></i> Print Details
+                    </button>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mt-3">
+                <div class="card-body">
+                    <h6 class="text-muted">Important Notes</h6>
+                    <ul class="small">
+                        <li>Please arrive at the airport at least 2 hours before departure</li>
+                        <li>Bring a valid ID for verification</li>
+                        <li>Check-in opens 3 hours before departure</li>
+                        <li>Cancellation fees may apply</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,51 @@
+@model ARS.ViewModels.RefundViewModel
+@{
+    ViewData["Title"] = "Cancel Reservation";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0"><i class="bi bi-x-circle"></i> Cancel Booking</h5>
+                </div>
+                <div class="card-body">
+                    <p>You're about to cancel reservation <strong>@Model.Reservation?.ConfirmationNumber</strong> for travel on <strong>@Model.Reservation?.TravelDate.ToString("MMMM dd, yyyy")</strong>.</p>
+
+                    <div class="mb-3">
+                        <h6>Cancellation policy</h6>
+                        <ul>
+                            <li>30+ days before departure: 100% refund</li>
+                            <li>15-29 days before departure: 80% refund</li>
+                            <li>7-14 days before departure: 50% refund</li>
+                            <li>Less than 7 days: no refund</li>
+                        </ul>
+                    </div>
+
+                    <div class="mb-3">
+                        <p class="mb-1 text-muted">Days before departure</p>
+                        <h5>@Model.DaysBeforeDeparture</h5>
+                    </div>
+
+                    <div class="mb-3">
+                        <p class="mb-1 text-muted">Refund percentage</p>
+                        <h5>@Model.RefundPercentage.ToString("N2")%</h5>
+                    </div>
+
+                    <div class="mb-3">
+                        <p class="mb-1 text-muted">Estimated refund amount</p>
+                        <h4 class="text-success">$@Model.PotentialRefundAmount.ToString("N2")</h4>
+                    </div>
+
+                    <form asp-action="ConfirmCancel" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="reservationId" value="@Model.Reservation?.ReservationID" />
+                        <button type="submit" class="btn btn-danger">Confirm Cancel</button>
+                        <a asp-controller="Reservation" asp-action="Details" asp-route-id="@Model.Reservation?.ReservationID" class="btn btn-secondary ms-2">Back</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,451 @@
+@model ARS.ViewModels.FlightSearchResultViewModel
+@using Microsoft.AspNetCore.Mvc.Rendering
+@{
+    ViewData["Title"] = "All Flights";
+}
+
+<div class="container mt-4">
+    @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Admin"))
+    {
+        <div class="d-flex justify-content-end mb-3">
+            <a asp-action="Create" class="btn btn-outline-primary">
+                <i class="bi bi-plus-circle"></i> Add Flight
+            </a>
+        </div>
+    }
+    <div class="card shadow-sm mb-4">
+        <div class="card-body bg-light">
+            <form asp-action="Search" method="post" id="flightSearchForm" class="row g-3">
+                @Html.AntiForgeryToken()
+                <div class="col-12 mb-3">
+                    <label class="form-label fw-bold">Trip Type</label>
+                    <div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="TripType" id="tripOneWay" value="OneWay" @(Model.SearchCriteria.TripType == "OneWay" ? "checked=\"checked\"" : "") />
+                            <label class="form-check-label" for="tripOneWay">One-way</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="TripType" id="tripRound" value="RoundTrip" @(Model.SearchCriteria.TripType == "RoundTrip" ? "checked=\"checked\"" : "") />
+                            <label class="form-check-label" for="tripRound">Round-trip</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="TripType" id="tripMulti" value="MultiCity" @(Model.SearchCriteria.TripType == "MultiCity" ? "checked=\"checked\"" : "") />
+                            <label class="form-check-label" for="tripMulti">Multi-city</label>
+                        </div>
+                    </div>
+                </div>
+
+                @* One-way only: From and To filters *@
+                <div class="col-md-4" id="oneWayFromFilter">
+                    <label class="form-label fw-bold">From</label>
+                    @{ var cities = (IEnumerable<SelectListItem>)ViewBag.Cities; }
+                    <select name="OriginCityID" class="form-select">
+                        <option value="">All Origins</option>
+                        @foreach (var c in cities)
+                        {
+                            var isSelected = Model.SearchCriteria.OriginCityID.ToString() == c.Value;
+                            var optionHtml = isSelected
+                                ? $"<option value=\"{c.Value}\" selected=\"selected\">{c.Text}</option>"
+                                : $"<option value=\"{c.Value}\">{c.Text}</option>";
+                            @Html.Raw(optionHtml)
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-4" id="oneWayToFilter">
+                    <label class="form-label fw-bold">To</label>
+                    <select name="DestinationCityID" class="form-select">
+                        <option value="">All Destinations</option>
+                        @foreach (var c in cities)
+                        {
+                            var isSelected = Model.SearchCriteria.DestinationCityID.ToString() == c.Value;
+                            var optionHtml = isSelected
+                                ? $"<option value=\"{c.Value}\" selected=\"selected\">{c.Text}</option>"
+                                : $"<option value=\"{c.Value}\">{c.Text}</option>";
+                            @Html.Raw(optionHtml)
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Travel Date</label>
+                    <input type="date" name="TravelDate" class="form-control" value="@Model.SearchCriteria.TravelDate.ToString("yyyy-MM-dd")" />
+                </div>
+                <div class="col-md-4" id="returnDateGroup" style="display:none;">
+                    <label class="form-label fw-bold">Return Date</label>
+                    <input type="date" name="ReturnDate" class="form-control" value="@(Model.SearchCriteria.ReturnDate?.ToString("yyyy-MM-dd") ?? string.Empty)" />
+                </div>
+
+                <input type="hidden" name="Passengers" value="@Model.SearchCriteria.Passengers" />
+                <input type="hidden" name="Class" value="@Model.SearchCriteria.Class" />
+
+                <div class="col-md-12 align-self-end text-end">
+                    <button type="submit" class="btn btn-primary w-100"><i class="bi bi-filter"></i> Apply Filters</button>
+                </div>
+
+                <div id="multiCityContainer" style="display:none;" class="mt-3 container">
+                    <label class="form-label fw-bold">Multi-city itinerary</label>
+                    <div id="legsList" class="mb-2"></div>
+                    <div class="mb-4">
+                        <button type="button" class="btn btn-outline-primary" id="btnAddLeg">Add destination</button>
+                    </div>
+                </div>
+            </form>
+            
+            <div class="alert alert-info mt-3 mb-0">
+                <i class="bi bi-info-circle"></i> 
+                <strong>Filter flights by your preferences.</strong>
+                You can select specific cities or leave them as "All Origins/All Destinations" to browse all available flights for your chosen travel date.
+            </div>
+        </div>
+    </div>
+
+    @* Only show flight results for One-way trips *@
+    @if (Model.SearchCriteria.TripType == "OneWay" && Model.Flights.Any())
+    {
+        <h4 class="mb-3">Found @Model.Flights.Count flight(s)</h4>
+        @foreach (var flight in Model.Flights)
+        {
+            <div class="card mb-3 shadow-sm">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-3">
+                            <h5 class="text-primary fw-bold mb-0">@flight.FlightNumber</h5>
+                            <small class="text-muted">@flight.AircraftType</small>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="text-center">
+                                    <h6 class="mb-0">@flight.DepartureTime.ToString("MMM dd, yyyy HH:mm")</h6>
+                                    <p class="mb-0 fw-bold">@flight.OriginAirportCode</p>
+                                    <small class="text-muted">@flight.OriginCity</small>
+                                </div>
+
+                                <div class="text-center flex-grow-1 px-3">
+                                    <i class="bi bi-arrow-right text-muted"></i>
+                                    <p class="mb-0 text-muted">@flight.Duration min</p>
+                                </div>
+
+                                <div class="text-center">
+                                    <h6 class="mb-0">@flight.ArrivalTime.ToString("MMM dd, yyyy HH:mm")</h6>
+                                    <p class="mb-0 fw-bold">@flight.DestinationAirportCode</p>
+                                    <small class="text-muted">@flight.DestinationCity</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3 text-end">
+                            <h3 class="text-success mb-1">$@flight.FinalPrice.ToString("N2")</h3>
+                            <p class="mb-2 text-muted small">
+                                <span class="badge bg-secondary">@Model.SearchCriteria.Passengers passenger(s)</span>
+                            </p>
+                            <p class="mb-2 text-muted">@flight.AvailableSeats seats available</p>
+                            <a asp-controller="Reservation"
+                               asp-action="Create"
+                               asp-route-flightId="@flight.FlightID"
+                               asp-route-scheduleId="@flight.ScheduleID"
+                               asp-route-travelDate="@Model.SearchCriteria.TravelDate"
+                               asp-route-numAdults="@Model.SearchCriteria.Passengers"
+                               asp-route-class="@Model.SearchCriteria.Class"
+                               class="btn btn-primary w-100 mb-2">
+                                Book Now
+                            </a>
+
+                            @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Admin"))
+                            {
+                                <div class="d-grid gap-2">
+                                    <a asp-action="Edit" asp-route-id="@flight.FlightID" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                    <a asp-action="Delete" asp-route-id="@flight.FlightID" class="btn btn-sm btn-outline-danger">Delete</a>
+                                    
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else if (Model.SearchCriteria.TripType == "OneWay")
+    {
+        <div class="alert alert-warning text-center" role="alert">
+            <i class="bi bi-exclamation-triangle fs-1"></i>
+            <h4 class="mt-3">No flights found</h4>
+            <p>Sorry, we couldn't find any flights matching your filter criteria. Try clearing filters or selecting different cities/dates.</p>
+        </div>
+    }
+
+    @* Pagination Controls - Only for One-way *@
+    @if (Model.SearchCriteria.TripType == "OneWay" && Model.TotalPages > 1)
+    {
+        <nav aria-label="Flight results pagination" class="mt-4">
+            <ul class="pagination justify-content-center">
+                @* Previous Button *@
+                <li class="page-item @(Model.CurrentPage == 1 ? "disabled" : "")">
+                    <a class="page-link" 
+                       href="@Url.Action("Index", new { 
+                           OriginCityID = Model.SearchCriteria.OriginCityID,
+                           DestinationCityID = Model.SearchCriteria.DestinationCityID,
+                           TravelDate = Model.SearchCriteria.TravelDate.ToString("yyyy-MM-dd"),
+                           Passengers = Model.SearchCriteria.Passengers,
+                           Class = Model.SearchCriteria.Class,
+                           TripType = Model.SearchCriteria.TripType,
+                           Page = Model.CurrentPage - 1
+                       })">
+                        <i class="bi bi-chevron-left"></i> Previous
+                    </a>
+                </li>
+
+                @* Page Numbers *@
+                @{
+                    var startPage = Math.Max(1, Model.CurrentPage - 2);
+                    var endPage = Math.Min(Model.TotalPages, Model.CurrentPage + 2);
+                }
+
+                @if (startPage > 1)
+                {
+                    <li class="page-item">
+                        <a class="page-link" 
+                           href="@Url.Action("Index", new { 
+                               OriginCityID = Model.SearchCriteria.OriginCityID,
+                               DestinationCityID = Model.SearchCriteria.DestinationCityID,
+                               TravelDate = Model.SearchCriteria.TravelDate.ToString("yyyy-MM-dd"),
+                               Passengers = Model.SearchCriteria.Passengers,
+                               Class = Model.SearchCriteria.Class,
+                               TripType = Model.SearchCriteria.TripType,
+                               Page = 1
+                           })">
+                            1
+                        </a>
+                    </li>
+                    @if (startPage > 2)
+                    {
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                    }
+                }
+
+                @for (var i = startPage; i <= endPage; i++)
+                {
+                    <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                        <a class="page-link" 
+                           href="@Url.Action("Index", new { 
+                               OriginCityID = Model.SearchCriteria.OriginCityID,
+                               DestinationCityID = Model.SearchCriteria.DestinationCityID,
+                               TravelDate = Model.SearchCriteria.TravelDate.ToString("yyyy-MM-dd"),
+                               Passengers = Model.SearchCriteria.Passengers,
+                               Class = Model.SearchCriteria.Class,
+                               TripType = Model.SearchCriteria.TripType,
+                               Page = i
+                           })">
+                            @i
+                        </a>
+                    </li>
+                }
+
+                @if (endPage < Model.TotalPages)
+                {
+                    @if (endPage < Model.TotalPages - 1)
+                    {
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                    }
+                    <li class="page-item">
+                        <a class="page-link" 
+                           href="@Url.Action("Index", new { 
+                               OriginCityID = Model.SearchCriteria.OriginCityID,
+                               DestinationCityID = Model.SearchCriteria.DestinationCityID,
+                               TravelDate = Model.SearchCriteria.TravelDate.ToString("yyyy-MM-dd"),
+                               Passengers = Model.SearchCriteria.Passengers,
+                               Class = Model.SearchCriteria.Class,
+                               TripType = Model.SearchCriteria.TripType,
+                               Page = Model.TotalPages
+                           })">
+                            @Model.TotalPages
+                        </a>
+                    </li>
+                }
+
+                @* Next Button *@
+                <li class="page-item @(Model.CurrentPage >= Model.TotalPages ? "disabled" : "")">
+                    <a class="page-link" 
+                       href="@Url.Action("Index", new { 
+                           OriginCityID = Model.SearchCriteria.OriginCityID,
+                           DestinationCityID = Model.SearchCriteria.DestinationCityID,
+                           TravelDate = Model.SearchCriteria.TravelDate.ToString("yyyy-MM-dd"),
+                           Passengers = Model.SearchCriteria.Passengers,
+                           Class = Model.SearchCriteria.Class,
+                           TripType = Model.SearchCriteria.TripType,
+                           Page = Model.CurrentPage + 1
+                       })">
+                        Next <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <p class="text-center text-muted">
+            Showing @((Model.CurrentPage - 1) * Model.PageSize + 1) to @Math.Min(Model.CurrentPage * Model.PageSize, Model.TotalResults) of @Model.TotalResults flights
+        </p>
+    }
+</div>
+
+<script>
+    (function () {
+        function $(sel) { return document.querySelector(sel); }
+        function $all(sel) { return Array.from(document.querySelectorAll(sel)); }
+
+        var tripRadios = $all('input[name="TripType"]');
+        var returnGroup = document.getElementById('returnDateGroup');
+        var multiCityContainer = document.getElementById('multiCityContainer');
+        var legsList = document.getElementById('legsList');
+        var btnAddLeg = document.getElementById('btnAddLeg');
+
+        function getSelectedTripType() {
+            var r = tripRadios.find(function (el) { return el.checked; });
+            return r ? r.value : 'OneWay';
+        }
+
+        function toggleUI() {
+            var type = getSelectedTripType();
+            
+            // Update dropdown options based on trip type
+            var originSelect = document.querySelector('select[name="OriginCityID"]');
+            var destinationSelect = document.querySelector('select[name="DestinationCityID"]');
+            
+            if (originSelect && destinationSelect) {
+                var firstOriginOption = originSelect.options[0];
+                var firstDestOption = destinationSelect.options[0];
+                
+                if (type === 'OneWay') {
+                    firstOriginOption.text = 'All Origins';
+                    firstDestOption.text = 'All Destinations';
+                } else {
+                    firstOriginOption.text = 'Select Origin City';
+                    firstDestOption.text = 'Select Destination City';
+                }
+            }
+            
+            // Show/hide return date field
+            if (type === 'RoundTrip') {
+                returnGroup.style.display = '';
+            } else {
+                returnGroup.style.display = 'none';
+            }
+
+            // Show/hide From/To filters (hide only for multi-city)
+            var fromFilter = document.getElementById('oneWayFromFilter');
+            var toFilter = document.getElementById('oneWayToFilter');
+            if (type === 'MultiCity') {
+                if (fromFilter) fromFilter.style.display = 'none';
+                if (toFilter) toFilter.style.display = 'none';
+            } else {
+                if (fromFilter) fromFilter.style.display = '';
+                if (toFilter) toFilter.style.display = '';
+            }
+
+            // Show/hide multi-city container
+            if (type === 'MultiCity') {
+                multiCityContainer.style.display = '';
+                var travelInput = document.querySelector('input[name="TravelDate"]');
+                if (travelInput) travelInput.closest('.col-md-4').style.display = 'none';
+            } else {
+                multiCityContainer.style.display = 'none';
+                var travelInput = document.querySelector('input[name="TravelDate"]');
+                if (travelInput) travelInput.closest('.col-md-4').style.display = '';
+            }
+
+            // Hide flight results for Round-trip and Multi-city
+            var flightResults = document.querySelector('.container > h4');
+            var flightCards = document.querySelectorAll('.container > .card.mb-3.shadow-sm');
+            var paginationNav = document.querySelector('nav[aria-label="Flight results pagination"]');
+            var paginationText = document.querySelector('.text-center.text-muted');
+            var noFlightsAlert = document.querySelector('.alert-warning');
+            
+            if (type === 'OneWay') {
+                // Show results for one-way
+                if (flightResults) flightResults.style.display = '';
+                flightCards.forEach(function(card) { card.style.display = ''; });
+                if (paginationNav) paginationNav.style.display = '';
+                if (paginationText) paginationText.style.display = '';
+                if (noFlightsAlert) noFlightsAlert.style.display = '';
+            } else {
+                // Hide results for round-trip and multi-city
+                if (flightResults) flightResults.style.display = 'none';
+                flightCards.forEach(function(card) { card.style.display = 'none'; });
+                if (paginationNav) paginationNav.style.display = 'none';
+                if (paginationText) paginationText.style.display = 'none';
+                if (noFlightsAlert) noFlightsAlert.style.display = 'none';
+            }
+        }
+
+        tripRadios.forEach(function (r) { r.addEventListener('change', toggleUI); });
+        toggleUI();
+
+        // Intercept form submission for round-trip and multi-city to go to SearchResults page
+        var form = document.getElementById('flightSearchForm');
+        form.addEventListener('submit', function(e) {
+            var tripType = getSelectedTripType();
+            if (tripType === 'RoundTrip' || tripType === 'MultiCity') {
+                // Let the form submit normally - it will POST to Search action
+                // which will render SearchResults view
+            }
+            // OneWay will also POST but will be redirected to Index with query params
+        });
+
+        var legTemplate = function (index) {
+            var cities = document.querySelectorAll('select[name="OriginCityID"] option');
+            var opts = '';
+            cities.forEach(function (o) { opts += '<option value="' + o.value + '">' + o.text + '</option>'; });
+            return '<div class="card mb-2" data-leg-index="' + index + '"><div class="card-body"><div class="row g-3 align-items-end"><div class="col-md-4"><label class="form-label">Origin</label><select name="Legs[' + index + '].OriginCityID" class="form-select" required>' + opts + '</select></div><div class="col-md-4"><label class="form-label">Destination</label><select name="Legs[' + index + '].DestinationCityID" class="form-select" required>' + opts + '</select></div><div class="col-md-3"><label class="form-label">Date</label><input name="Legs[' + index + '].TravelDate" type="date" class="form-control" required /></div><div class="col-md-1 text-end"><button type="button" class="btn btn-link text-danger btnRemoveLeg">&times;</button></div></div></div></div>';
+        };
+
+        function reindexLegs() {
+            var cards = legsList.querySelectorAll('[data-leg-index]');
+            Array.from(cards).forEach(function (card, idx) {
+                card.setAttribute('data-leg-index', idx);
+                var inputs = card.querySelectorAll('select, input');
+                inputs.forEach(function (inp) {
+                    var name = inp.getAttribute('name');
+                    if (!name) return;
+                    var newName = name.replace(/Legs\[\d+\]/, 'Legs[' + idx + ']');
+                    inp.setAttribute('name', newName);
+                });
+            });
+        }
+
+        function addLeg() {
+            var idx = legsList.querySelectorAll('[data-leg-index]').length;
+            var wrapper = document.createElement('div');
+            wrapper.innerHTML = legTemplate(idx);
+            legsList.appendChild(wrapper.firstElementChild);
+            reindexLegs();
+            attachRemoveHandlers();
+        }
+
+        function attachRemoveHandlers() {
+            var removes = legsList.querySelectorAll('.btnRemoveLeg');
+            removes.forEach(function (btn) {
+                if (btn._attached) return;
+                btn._attached = true;
+                btn.addEventListener('click', function () {
+                    var card = btn.closest('[data-leg-index]');
+                    if (card) {
+                        // Prevent removing the last leg
+                        var totalLegs = legsList.querySelectorAll('[data-leg-index]').length;
+                        if (totalLegs <= 1) {
+                            alert('Multi-city trips require at least one leg. Please add another leg before removing this one.');
+                            return;
+                        }
+                        card.remove();
+                        reindexLegs();
+                    }
+                });
+            });
+        }
+
+        btnAddLeg && btnAddLeg.addEventListener('click', addLeg);
+
+        // add two default legs when multi-city selected
+        tripRadios.forEach(function (r) { r.addEventListener('change', function () { if (getSelectedTripType() === 'MultiCity' && legsList.children.length === 0) { addLeg(); addLeg(); } }); });
+
+    })();
+</script>
